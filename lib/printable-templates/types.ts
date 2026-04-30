@@ -33,6 +33,14 @@ export type TemplateCheckOption = {
   label: string;
   value: string;
   bounds: TemplateInputBounds;
+  textBoxBounds?: TemplateInputBounds;
+  textPlaceholderText?: string;
+  isOtherOption?: boolean;
+};
+
+export type TemplateChoiceValue = {
+  selected: string | string[];
+  otherText?: string;
 };
 
 export type TemplateInputDefinition = {
@@ -48,7 +56,7 @@ export type TemplateInputDefinition = {
 
 export type TemplateInputValue = {
   inputId: string;
-  value: string | boolean | number | string[] | null;
+  value: string | boolean | number | string[] | TemplateChoiceValue | null;
 };
 
 export type TemplatePageRenderRequest = {

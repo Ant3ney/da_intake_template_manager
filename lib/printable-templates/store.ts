@@ -7,9 +7,25 @@ import type { PrintableTemplate, TemplateInputDefinition } from "./types";
 const dataPath = path.join(process.cwd(), "data", "printable-templates.json");
 
 function withInputPlaceholder(input: TemplateInputDefinition): TemplateInputDefinition {
+  const checkOptions = input.checkOptions?.map((option) => ({
+    ...option,
+    textPlaceholderText: option.textPlaceholderText?.trim() || (option.isOtherOption ? "Other" : undefined),
+    textBoxBounds:
+      option.textBoxBounds ??
+      (option.isOtherOption
+        ? {
+            ...option.bounds,
+            xPercent: Math.min(84, option.bounds.xPercent + option.bounds.widthPercent + 1.2),
+            widthPercent: 16,
+            heightPercent: Math.max(option.bounds.heightPercent, 2.2),
+          }
+        : undefined),
+  }));
+
   return {
     ...input,
     placeholderText: input.placeholderText?.trim() || defaultPlaceholderForInput(input.typeId, input.label),
+    checkOptions,
   };
 }
 

@@ -2,7 +2,7 @@
 
 import { Fragment, useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
-import { defaultPlaceholderForInput } from "@/lib/printable-templates/placeholders";
+import { defaultOtherChoicePlaceholder, defaultPlaceholderForInput } from "@/lib/printable-templates/placeholders";
 import type {
   PrintableTemplate,
   TemplateCheckOption,
@@ -60,13 +60,31 @@ function createCheckOption(index: number, bounds?: TemplateInputBounds): Templat
   };
 }
 
+function createOtherTextBounds(bounds: TemplateInputBounds) {
+  return normalizeBounds({
+    xPercent: bounds.xPercent + bounds.widthPercent + 1.2,
+    yPercent: bounds.yPercent - 0.25,
+    widthPercent: 16,
+    heightPercent: Math.max(bounds.heightPercent, 2.2),
+  });
+}
+
 function normalizeTemplateInputs(template: PrintableTemplate): PrintableTemplate {
   return {
     ...template,
     inputDefinitions: template.inputDefinitions.map((input) => ({
       ...input,
       placeholderText: input.placeholderText?.trim() || defaultPlaceholderForInput(input.typeId, input.label),
-      checkOptions: isChoiceInput(input.typeId) ? input.checkOptions ?? [] : undefined,
+      checkOptions: isChoiceInput(input.typeId)
+        ? (input.checkOptions ?? []).map((option) => ({
+            ...option,
+            textPlaceholderText:
+              option.textPlaceholderText?.trim() || (option.isOtherOption ? defaultOtherChoicePlaceholder() : undefined),
+            textBoxBounds: option.textBoxBounds ? normalizeBounds(option.textBoxBounds) : option.isOtherOption ? createOtherTextBounds(option.bounds) : undefined,
+            isOtherOption: option.isOtherOption ?? false,
+            bounds: normalizeBounds(option.bounds),
+          }))
+        : undefined,
     })),
   };
 }
@@ -74,6 +92,7 @@ function normalizeTemplateInputs(template: PrintableTemplate): PrintableTemplate
 type OverlayDragState = {
   mode: "move" | "resize";
   inputId: string;
+  target: "input" | "checkOption" | "checkOptionText";
   optionId?: string;
   pointerId: number;
   startClientX: number;
@@ -115,10 +134,18 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     setSelectedInputId(input.inputId);
   }
 
-  function addCheckOption(inputId: string) {
+  function addCheckOption(inputId: string, isOtherOption = false) {
     updateInput(inputId, (input) => ({
       ...input,
-      checkOptions: [...(input.checkOptions ?? []), createCheckOption((input.checkOptions?.length ?? 0) + 1, input.bounds)],
+      checkOptions: [
+        ...(input.checkOptions ?? []),
+        {
+          ...createCheckOption((input.checkOptions?.length ?? 0) + 1, input.bounds),
+          isOtherOption,
+          textPlaceholderText: isOtherOption ? defaultOtherChoicePlaceholder() : undefined,
+          textBoxBounds: isOtherOption ? createOtherTextBounds(input.bounds) : undefined,
+        },
+      ],
     }));
   }
 
@@ -138,6 +165,26 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
       ...input,
       checkOptions: (input.checkOptions ?? []).filter((option) => option.optionId !== optionId),
     }));
+  }
+
+  function toggleOtherCheckOption(inputId: string, optionId: string, enabled: boolean) {
+    updateCheckOption(inputId, optionId, (current) => {
+      if (enabled) {
+        return {
+          ...current,
+          isOtherOption: true,
+          textPlaceholderText: current.textPlaceholderText?.trim() || defaultOtherChoicePlaceholder(),
+          textBoxBounds: current.textBoxBounds ?? createOtherTextBounds(current.bounds),
+        };
+      }
+
+      return {
+        ...current,
+        isOtherOption: false,
+        textBoxBounds: undefined,
+        textPlaceholderText: undefined,
+      };
+    });
   }
 
   function removeSelectedInput() {
@@ -167,8 +214,15 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
           inputId: input.inputId,
           value: input.checkOptions?.length
             ? input.typeId === "checkbox"
-              ? input.checkOptions.map((option) => option.value)
-              : input.checkOptions[0]?.value
+              ? {
+                  selected: input.checkOptions.map((option) => option.value),
+                  otherText: input.checkOptions.find((option) => option.isOtherOption)?.textPlaceholderText ?? defaultOtherChoicePlaceholder(),
+                }
+              : {
+                  selected:
+                    input.checkOptions.find((option) => option.isOtherOption)?.value ?? input.checkOptions[0]?.value ?? "",
+                  otherText: input.checkOptions.find((option) => option.isOtherOption)?.textPlaceholderText ?? defaultOtherChoicePlaceholder(),
+                }
             : input.typeId === "checkbox"
               ? true
               : input.placeholderText ?? defaultPlaceholderForInput(input.typeId, input.label),
@@ -183,6 +237,7 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     event: PointerEvent<HTMLElement>,
     input: TemplateInputDefinition,
     mode: OverlayDragState["mode"],
+    target: OverlayDragState["target"] = "input",
     optionId?: string,
     startBounds = input.bounds,
   ) {
@@ -193,6 +248,7 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     dragStateRef.current = {
       mode,
       inputId: input.inputId,
+      target,
       optionId,
       pointerId: event.pointerId,
       startClientX: event.clientX,
@@ -221,7 +277,36 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     option: TemplateCheckOption,
   ) {
     event.stopPropagation();
-    startOverlayInteraction(event, input, "move", option.optionId, option.bounds);
+    startOverlayInteraction(event, input, "move", "checkOption", option.optionId, option.bounds);
+  }
+
+  function startCheckOptionResize(
+    event: PointerEvent<HTMLSpanElement>,
+    input: TemplateInputDefinition,
+    option: TemplateCheckOption,
+  ) {
+    event.stopPropagation();
+    startOverlayInteraction(event, input, "resize", "checkOption", option.optionId, option.bounds);
+  }
+
+  function startCheckOptionTextDrag(
+    event: PointerEvent<HTMLButtonElement>,
+    input: TemplateInputDefinition,
+    option: TemplateCheckOption,
+  ) {
+    if (!option.textBoxBounds) return;
+    event.stopPropagation();
+    startOverlayInteraction(event, input, "move", "checkOptionText", option.optionId, option.textBoxBounds);
+  }
+
+  function startCheckOptionTextResize(
+    event: PointerEvent<HTMLSpanElement>,
+    input: TemplateInputDefinition,
+    option: TemplateCheckOption,
+  ) {
+    if (!option.textBoxBounds) return;
+    event.stopPropagation();
+    startOverlayInteraction(event, input, "resize", "checkOptionText", option.optionId, option.textBoxBounds);
   }
 
   function updateOverlayInteraction(event: PointerEvent<HTMLElement>) {
@@ -244,19 +329,25 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
             yPercent: dragState.startBounds.yPercent + deltaYPercent,
           });
 
-    updateInput(dragState.inputId, (input) =>
-      dragState.optionId
-        ? {
-            ...input,
-            checkOptions: (input.checkOptions ?? []).map((option) =>
-              option.optionId === dragState.optionId ? { ...option, bounds: nextBounds } : option,
-            ),
+    updateInput(dragState.inputId, (input) => {
+      if (!dragState.optionId) {
+        return {
+          ...input,
+          bounds: nextBounds,
+        };
+      }
+
+      return {
+        ...input,
+        checkOptions: (input.checkOptions ?? []).map((option) => {
+          if (option.optionId !== dragState.optionId) return option;
+          if (dragState.target === "checkOptionText") {
+            return { ...option, textBoxBounds: nextBounds };
           }
-        : {
-            ...input,
-            bounds: nextBounds,
-          },
-    );
+          return { ...option, bounds: nextBounds };
+        }),
+      };
+    });
     event.preventDefault();
   }
 
@@ -423,7 +514,10 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
               <div className="check-options-editor">
                 <div className="check-options-header">
                   <span>Check locations</span>
-                  <button type="button" onClick={() => addCheckOption(selectedInput.inputId)}>Add option</button>
+                  <div className="check-options-actions">
+                    <button type="button" onClick={() => addCheckOption(selectedInput.inputId)}>Add option</button>
+                    <button type="button" onClick={() => addCheckOption(selectedInput.inputId, true)}>Add other</button>
+                  </div>
                 </div>
                 {(selectedInput.checkOptions ?? []).map((option, index) => (
                   <div className="check-option-card" key={option.optionId}>
@@ -456,6 +550,30 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
                         }
                       />
                     </label>
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={option.isOtherOption ?? false}
+                        onChange={(event) =>
+                          toggleOtherCheckOption(selectedInput.inputId, option.optionId, event.target.checked)
+                        }
+                      />
+                      Other option
+                    </label>
+                    {option.isOtherOption ? (
+                      <label className="full-span">
+                        Other text placeholder
+                        <input
+                          value={option.textPlaceholderText ?? defaultOtherChoicePlaceholder()}
+                          onChange={(event) =>
+                            updateCheckOption(selectedInput.inputId, option.optionId, (current) => ({
+                              ...current,
+                              textPlaceholderText: event.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+                    ) : null}
                     {(["xPercent", "yPercent", "widthPercent", "heightPercent"] as const).map((key) => (
                       <label key={key}>
                         {key}
@@ -471,9 +589,37 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
                               bounds: normalizeBounds({ ...current.bounds, [key]: Number(event.target.value) }),
                             }))
                           }
-                        />
+                          />
                       </label>
                     ))}
+                    {option.isOtherOption && option.textBoxBounds ? (
+                      <>
+                        {(() => {
+                          const textBoxBounds = option.textBoxBounds;
+                          return (["xPercent", "yPercent", "widthPercent", "heightPercent"] as const).map((key) => (
+                            <label key={`text-${key}`}>
+                              text {key}
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.25"
+                                value={textBoxBounds[key]}
+                                onChange={(event) =>
+                                  updateCheckOption(selectedInput.inputId, option.optionId, (current) => ({
+                                    ...current,
+                                    textBoxBounds: normalizeBounds({
+                                      ...(current.textBoxBounds ?? createOtherTextBounds(current.bounds)),
+                                      [key]: Number(event.target.value),
+                                    }),
+                                  }))
+                                }
+                              />
+                            </label>
+                          ));
+                        })()}
+                      </>
+                    ) : null}
                     <button type="button" onClick={() => removeCheckOption(selectedInput.inputId, option.optionId)}>
                       Remove {option.label || `option ${index + 1}`}
                     </button>
@@ -531,25 +677,64 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
                   />
                 </button>
                 {(input.checkOptions ?? []).map((option) => (
-                  <button
-                    type="button"
-                    key={option.optionId}
-                    className={`check-option-overlay ${input.inputId === selectedInput?.inputId ? "selected" : ""}`}
-                    style={{
-                      left: `${option.bounds.xPercent}%`,
-                      top: `${option.bounds.yPercent}%`,
-                      width: `${option.bounds.widthPercent}%`,
-                      height: `${option.bounds.heightPercent}%`,
-                    }}
-                    onPointerDown={(event) => startCheckOptionDrag(event, input, option)}
-                    onPointerMove={updateOverlayInteraction}
-                    onPointerUp={finishOverlayInteraction}
-                    onPointerCancel={finishOverlayInteraction}
-                    onClick={() => setSelectedInputId(input.inputId)}
-                    title={`${input.label}: ${option.label} = ${option.value}`}
-                  >
-                    <span aria-hidden="true" />
-                  </button>
+                  <Fragment key={option.optionId}>
+                    <button
+                      type="button"
+                      className={`check-option-overlay ${input.inputId === selectedInput?.inputId ? "selected" : ""}`}
+                      style={{
+                        left: `${option.bounds.xPercent}%`,
+                        top: `${option.bounds.yPercent}%`,
+                        width: `${option.bounds.widthPercent}%`,
+                        height: `${option.bounds.heightPercent}%`,
+                      }}
+                      onPointerDown={(event) => startCheckOptionDrag(event, input, option)}
+                      onPointerMove={updateOverlayInteraction}
+                      onPointerUp={finishOverlayInteraction}
+                      onPointerCancel={finishOverlayInteraction}
+                      onClick={() => setSelectedInputId(input.inputId)}
+                      title={`${input.label}: ${option.label} = ${option.value}`}
+                    >
+                      <span className="check-option-glyph" aria-hidden="true" />
+                      <span
+                        className="overlay-resize-handle"
+                        aria-hidden="true"
+                        onPointerDown={(event) => startCheckOptionResize(event, input, option)}
+                        onPointerMove={updateOverlayInteraction}
+                        onPointerUp={finishOverlayInteraction}
+                        onPointerCancel={finishOverlayInteraction}
+                      />
+                    </button>
+                    {option.textBoxBounds ? (
+                      <button
+                        type="button"
+                        className={`check-option-textbox-overlay ${input.inputId === selectedInput?.inputId ? "selected" : ""}`}
+                        style={{
+                          left: `${option.textBoxBounds.xPercent}%`,
+                          top: `${option.textBoxBounds.yPercent}%`,
+                          width: `${option.textBoxBounds.widthPercent}%`,
+                          height: `${option.textBoxBounds.heightPercent}%`,
+                        }}
+                        onPointerDown={(event) => startCheckOptionTextDrag(event, input, option)}
+                        onPointerMove={updateOverlayInteraction}
+                        onPointerUp={finishOverlayInteraction}
+                        onPointerCancel={finishOverlayInteraction}
+                        onClick={() => setSelectedInputId(input.inputId)}
+                        title={`${option.label} text`}
+                      >
+                        <span className="overlay-label">
+                          {option.textPlaceholderText ?? defaultOtherChoicePlaceholder()}
+                        </span>
+                        <span
+                          className="overlay-resize-handle"
+                          aria-hidden="true"
+                          onPointerDown={(event) => startCheckOptionTextResize(event, input, option)}
+                          onPointerMove={updateOverlayInteraction}
+                          onPointerUp={finishOverlayInteraction}
+                          onPointerCancel={finishOverlayInteraction}
+                        />
+                      </button>
+                    ) : null}
+                  </Fragment>
                 ))}
               </Fragment>
             ))}

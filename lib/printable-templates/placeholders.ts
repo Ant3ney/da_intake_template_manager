@@ -29,3 +29,7 @@ export function defaultPlaceholderForInput(typeId: TemplateInputTypeId, label = 
       return `Enter ${label.toLowerCase()}`;
   }
 }
+
+export function defaultOtherChoicePlaceholder() {
+  return "Other";
+}

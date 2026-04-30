@@ -1,5 +1,5 @@
 import { deflateSync } from "zlib";
-import { selectedCheckOptions, shouldDrawSimpleCheck } from "./check-options";
+import { getChoiceOtherText, selectedCheckOptions, shouldDrawSimpleCheck } from "./check-options";
 import { formatInputValue, valuesByInputId } from "./format";
 import type {
   BlankTemplateDocument,
@@ -172,6 +172,14 @@ function drawPdfCheckMark(commands: string[], x: number, y: number, w: number, h
   );
 }
 
+function drawPdfTextBox(commands: string[], x: number, y: number, w: number, h: number, text: string) {
+  commands.push(`q 1 1 1 rg ${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f Q`);
+  commands.push(`0 0 0 RG 0.7 w ${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re S`);
+  if (text) {
+    commands.push(`BT /F1 10 Tf ${(x + 3).toFixed(2)} ${(y + h - 12).toFixed(2)} Td (${escapePdfText(text)}) Tj ET`);
+  }
+}
+
 function drawPdfTemplate(commands: string[], pageHeight: number) {
   const tableX = 11;
   const tableY = 22;
@@ -232,6 +240,7 @@ function makePdf(template: PrintableTemplate, inputValues: TemplateInputValue[])
     const h = (definition.bounds.heightPercent / 100) * pageHeight;
     const y = pageHeight - yTop - h;
     const rawValue = values.get(definition.inputId);
+    const otherText = getChoiceOtherText(rawValue);
     const checkedOptions = selectedCheckOptions(definition, rawValue);
 
     if (checkedOptions.length > 0) {
@@ -241,6 +250,13 @@ function makePdf(template: PrintableTemplate, inputValues: TemplateInputValue[])
         const optionW = (option.bounds.widthPercent / 100) * pdfWidth;
         const optionH = (option.bounds.heightPercent / 100) * pageHeight;
         drawPdfCheckMark(commands, optionX, pageHeight - optionYTop - optionH, optionW, optionH);
+        if (option.textBoxBounds) {
+          const textBoxX = (option.textBoxBounds.xPercent / 100) * pdfWidth;
+          const textBoxYTop = (option.textBoxBounds.yPercent / 100) * pageHeight;
+          const textBoxW = (option.textBoxBounds.widthPercent / 100) * pdfWidth;
+          const textBoxH = (option.textBoxBounds.heightPercent / 100) * pageHeight;
+          drawPdfTextBox(commands, textBoxX, pageHeight - textBoxYTop - textBoxH, textBoxW, textBoxH, otherText);
+        }
       }
       continue;
     }
@@ -314,6 +330,14 @@ function fillRect(pixels: Buffer, x: number, y: number, w: number, h: number, co
   }
 }
 
+function drawPngTextBox(pixels: Buffer, x: number, y: number, w: number, h: number) {
+  fillRect(pixels, x, y, w, h, [255, 255, 255, 255]);
+  fillRect(pixels, x, y, w, 1, [203, 213, 225, 255]);
+  fillRect(pixels, x, y + h - 1, w, 1, [203, 213, 225, 255]);
+  fillRect(pixels, x, y, 1, h, [203, 213, 225, 255]);
+  fillRect(pixels, x + w - 1, y, 1, h, [203, 213, 225, 255]);
+}
+
 function fillCircle(pixels: Buffer, cx: number, cy: number, radius: number, color: [number, number, number, number]) {
   const x0 = Math.max(0, Math.floor(cx - radius));
   const y0 = Math.max(0, Math.floor(cy - radius));
@@ -385,6 +409,15 @@ function makePng(template: PrintableTemplate, inputValues: TemplateInputValue[])
           (option.bounds.widthPercent / 100) * pngWidth,
           (option.bounds.heightPercent / 100) * pngHeight,
         );
+        if (option.textBoxBounds) {
+          drawPngTextBox(
+            pixels,
+            (option.textBoxBounds.xPercent / 100) * pngWidth,
+            (option.textBoxBounds.yPercent / 100) * pngHeight,
+            (option.textBoxBounds.widthPercent / 100) * pngWidth,
+            (option.textBoxBounds.heightPercent / 100) * pngHeight,
+          );
+        }
       }
       continue;
     }

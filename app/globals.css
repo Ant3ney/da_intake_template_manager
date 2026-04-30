@@ -226,6 +226,12 @@ a {
   padding: 8px 10px;
 }
 
+.check-options-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .check-option-card {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -299,12 +305,39 @@ a {
   box-shadow: 0 0 0 2px rgba(15, 118, 110, .24);
 }
 
-.check-option-overlay span {
+.check-option-textbox-overlay.selected {
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, .24);
+}
+
+.check-option-overlay .check-option-glyph {
+  display: block;
   width: 72%;
   height: 42%;
   border-left: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: translateY(-10%) rotate(-45deg);
+}
+
+.check-option-textbox-overlay {
+  position: absolute;
+  z-index: 3;
+  overflow: hidden;
+  border: 1px dashed #0284c7;
+  background: rgba(255, 255, 255, .92);
+  color: #0f172a;
+  cursor: move;
+  line-height: 1.2;
+  padding: 2px 4px;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.check-option-textbox-overlay .overlay-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .template-overlay .overlay-label {

@@ -42,23 +42,6 @@
         "placeholderText": "MM/DD/YYYY"
       },
       {
-        "inputId": "gender_other",
-        "typeId": "textLine",
-        "label": "Gender other",
-        "bounds": {
-          "xPercent": 3.123399390243903,
-          "yPercent": 9.242659942575276,
-          "widthPercent": 8.6,
-          "heightPercent": 1.7
-        },
-        "displaySettings": {
-          "useWhiteBackground": true,
-          "fontSizePt": 9,
-          "textAlign": "left"
-        },
-        "placeholderText": "Enter gender other"
-      },
-      {
         "inputId": "pronouns_other",
         "typeId": "textLine",
         "label": "Pronouns other",
@@ -534,6 +517,67 @@
           "textAlign": "left"
         },
         "placeholderText": "MM/DD/YYYY"
+      },
+      {
+        "inputId": "input_1777591945283",
+        "typeId": "checkbox",
+        "label": "Gender real",
+        "placeholderText": "Checked",
+        "bounds": {
+          "xPercent": 2.8110708841463388,
+          "yPercent": 0.49841713907089746,
+          "widthPercent": 2.254192073170733,
+          "heightPercent": 1.6854892144592506
+        },
+        "displaySettings": {
+          "useWhiteBackground": true,
+          "fontSizePt": 11,
+          "textAlign": "left"
+        },
+        "checkOptions": [
+          {
+            "optionId": "option_1777591982705_1",
+            "label": "Male",
+            "value": "male",
+            "bounds": {
+              "xPercent": 7.524771341463415,
+              "yPercent": 6.994331149230653,
+              "widthPercent": 2.4533155487804836,
+              "heightPercent": 2.1986306412427297
+            }
+          },
+          {
+            "optionId": "option_1777592046031_2",
+            "label": "Female",
+            "value": "female",
+            "bounds": {
+              "xPercent": 20.335842225609753,
+              "yPercent": 7.155930206876243,
+              "widthPercent": 2.502381859756099,
+              "heightPercent": 2.046970477803136
+            },
+            "isOtherOption": false
+          },
+          {
+            "optionId": "option_1777592069802_3",
+            "label": "Other",
+            "value": "other",
+            "bounds": {
+              "xPercent": 12.463319359756094,
+              "yPercent": 7.270043436648751,
+              "widthPercent": 2.870617378048781,
+              "heightPercent": 1.7959213723036147
+            },
+            "isOtherOption": true,
+            "textPlaceholderText": "Other",
+            "textBoxBounds": {
+              "xPercent": 13.439900914634151,
+              "yPercent": 9.278012957373187,
+              "widthPercent": 15.58603277439024,
+              "heightPercent": 2.283192225576088
+            }
+          }
+        ]
       }
     ],
     "layoutSettings": {
@@ -545,6 +589,6 @@
       "backgroundColor": "#ffffff"
     },
     "sourceAssetPath": "/ai_context/inbox_template/69ab60b5f00f91cc354a1571_67c77655b40960dbb5563104_Patient_Intake_Form.webp",
-    "updatedAt": "2026-04-30T22:09:51.461Z"
+    "updatedAt": "2026-04-30T23:44:26.114Z"
   }
 ]
