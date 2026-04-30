@@ -8,10 +8,7 @@ const dataPath = path.join(process.cwd(), "data", "printable-templates.json");
 async function readSeededTemplates(): Promise<PrintableTemplate[]> {
   try {
     const raw = await fs.readFile(dataPath, "utf8");
-    const templates = JSON.parse(raw) as PrintableTemplate[];
-    return templates.map((template) =>
-      template.pageId === "patient-intake-form" ? samplePrintableTemplates[0] : template
-    );
+    return JSON.parse(raw) as PrintableTemplate[];
   } catch {
     return samplePrintableTemplates;
   }

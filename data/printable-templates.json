@@ -13,8 +13,8 @@
         "bounds": {
           "xPercent": 6.8,
           "yPercent": 5.25,
-          "widthPercent": 61.7,
-          "heightPercent": 2.1
+          "widthPercent": 61.40512576219513,
+          "heightPercent": 1.4381432673194436
         },
         "displaySettings": {
           "useWhiteBackground": true,
@@ -27,10 +27,10 @@
         "typeId": "date",
         "label": "DOB",
         "bounds": {
-          "xPercent": 73.7,
-          "yPercent": 5.25,
-          "widthPercent": 22.5,
-          "heightPercent": 2.1
+          "xPercent": 74.20828887195123,
+          "yPercent": 5.371843480821616,
+          "widthPercent": 21.203791920731707,
+          "heightPercent": 1.4664875211661637
         },
         "displaySettings": {
           "useWhiteBackground": true,
@@ -44,8 +44,8 @@
         "typeId": "textLine",
         "label": "Gender other",
         "bounds": {
-          "xPercent": 8.073856707317074,
-          "yPercent": 3.061772068026208,
+          "xPercent": 7.876638719512195,
+          "yPercent": 7.692928660826031,
           "widthPercent": 8.6,
           "heightPercent": 1.7
         },
@@ -124,8 +124,8 @@
         "typeId": "number",
         "label": "Zip",
         "bounds": {
-          "xPercent": 17.6,
-          "yPercent": 14.15,
+          "xPercent": 9.342568597560977,
+          "yPercent": 2.635238901568137,
           "widthPercent": 11,
           "heightPercent": 2.1
         },
@@ -514,6 +514,6 @@
       "backgroundColor": "#ffffff"
     },
     "sourceAssetPath": "/ai_context/inbox_template/69ab60b5f00f91cc354a1571_67c77655b40960dbb5563104_Patient_Intake_Form.webp",
-    "updatedAt": "2026-04-30T21:33:19.514Z"
+    "updatedAt": "2026-04-30T21:41:19.595Z"
   }
 ]
