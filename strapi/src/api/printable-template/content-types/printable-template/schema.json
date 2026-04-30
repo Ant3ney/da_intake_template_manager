@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "printable_templates",
+  "info": {
+    "singularName": "printable-template",
+    "pluralName": "printable-templates",
+    "displayName": "Printable Template"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "pageId": {
+      "type": "uid",
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "html": {
+      "type": "text",
+      "required": true
+    },
+    "css": {
+      "type": "text",
+      "required": true
+    },
+    "javascript": {
+      "type": "text"
+    },
+    "inputDefinitions": {
+      "type": "json",
+      "required": true
+    },
+    "layoutSettings": {
+      "type": "json",
+      "required": true
+    },
+    "displaySettings": {
+      "type": "json",
+      "required": true
+    },
+    "sourceAssetPath": {
+      "type": "string"
+    }
+  }
+}
