@@ -31,6 +31,7 @@ export type TemplateInputDefinition = {
   inputId: string;
   typeId: TemplateInputTypeId;
   label: string;
+  placeholderText?: string;
   bounds: TemplateInputBounds;
   displaySettings: TemplateInputDisplaySettings;
   required?: boolean;

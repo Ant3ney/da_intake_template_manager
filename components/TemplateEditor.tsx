@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
+import { defaultPlaceholderForInput } from "@/lib/printable-templates/placeholders";
 import type {
   PrintableTemplate,
   TemplateInputBounds,
@@ -39,6 +40,16 @@ function normalizeBounds(bounds: TemplateInputBounds): TemplateInputBounds {
   };
 }
 
+function normalizeTemplateInputs(template: PrintableTemplate): PrintableTemplate {
+  return {
+    ...template,
+    inputDefinitions: template.inputDefinitions.map((input) => ({
+      ...input,
+      placeholderText: input.placeholderText?.trim() || defaultPlaceholderForInput(input.typeId, input.label),
+    })),
+  };
+}
+
 type OverlayDragState = {
   mode: "move" | "resize";
   inputId: string;
@@ -51,7 +62,7 @@ type OverlayDragState = {
 };
 
 export function TemplateEditor({ initialTemplate }: { initialTemplate: PrintableTemplate }) {
-  const [template, setTemplate] = useState(initialTemplate);
+  const [template, setTemplate] = useState(() => normalizeTemplateInputs(initialTemplate));
   const [selectedInputId, setSelectedInputId] = useState(initialTemplate.inputDefinitions[0]?.inputId ?? "");
   const [status, setStatus] = useState("Loaded seeded PrintableTemplate data.");
   const dragStateRef = useRef<OverlayDragState | null>(null);
@@ -74,6 +85,7 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
       inputId: `input_${Date.now()}`,
       typeId: "textLine",
       label: `Input ${nextNumber}`,
+      placeholderText: defaultPlaceholderForInput("textLine", `Input ${nextNumber}`),
       bounds: { xPercent: 10, yPercent: 10 + nextNumber * 4, widthPercent: 30, heightPercent: 3 },
       displaySettings: { useWhiteBackground: true, fontSizePt: 11, textAlign: "left" },
     };
@@ -106,7 +118,10 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
         pageId: template.pageId,
         inputValues: template.inputDefinitions.map((input) => ({
           inputId: input.inputId,
-          value: input.typeId === "checkbox" ? true : input.label,
+          value:
+            input.typeId === "checkbox"
+              ? true
+              : input.placeholderText ?? defaultPlaceholderForInput(input.typeId, input.label),
         })),
       }),
     });
@@ -221,19 +236,43 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
               <input
                 value={selectedInput.label}
                 onChange={(event) =>
-                  updateInput(selectedInput.inputId, (input) => ({ ...input, label: event.target.value }))
+                  updateInput(selectedInput.inputId, (input) => {
+                    const label = event.target.value;
+                    const previousDefault = defaultPlaceholderForInput(input.typeId, input.label);
+                    return {
+                      ...input,
+                      label,
+                      placeholderText:
+                        !input.placeholderText || input.placeholderText === previousDefault
+                          ? defaultPlaceholderForInput(input.typeId, label)
+                          : input.placeholderText,
+                    };
+                  })
                 }
               />
             </label>
-            <label>
+            <label className="full-span">
+              Placeholder text
+              <input
+                value={selectedInput.placeholderText ?? defaultPlaceholderForInput(selectedInput.typeId, selectedInput.label)}
+                onChange={(event) =>
+                  updateInput(selectedInput.inputId, (input) => ({ ...input, placeholderText: event.target.value }))
+                }
+              />
+            </label>
+            <label className="full-span">
               Type
               <select
                 value={selectedInput.typeId}
                 onChange={(event) =>
-                  updateInput(selectedInput.inputId, (input) => ({
-                    ...input,
-                    typeId: event.target.value as TemplateInputTypeId,
-                  }))
+                  updateInput(selectedInput.inputId, (input) => {
+                    const typeId = event.target.value as TemplateInputTypeId;
+                    return {
+                      ...input,
+                      typeId,
+                      placeholderText: defaultPlaceholderForInput(typeId, input.label),
+                    };
+                  })
                 }
               >
                 {inputTypes.map((type) => <option key={type}>{type}</option>)}
@@ -341,7 +380,7 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
                 onPointerCancel={finishOverlayInteraction}
                 onClick={() => setSelectedInputId(input.inputId)}
               >
-                <span className="overlay-label">{input.label}</span>
+                <span className="overlay-label">{input.placeholderText ?? defaultPlaceholderForInput(input.typeId, input.label)}</span>
                 <span
                   className="overlay-resize-handle"
                   aria-hidden="true"

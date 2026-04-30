@@ -178,6 +178,7 @@ a {
 .settings-form label:nth-child(1),
 .settings-form label:nth-child(2),
 .settings-form label:nth-child(3),
+.settings-form .full-span,
 .settings-form .checkbox-label {
   grid-column: 1 / -1;
 }

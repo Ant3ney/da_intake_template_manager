@@ -14,21 +14,22 @@
           "xPercent": 6.8,
           "yPercent": 5.25,
           "widthPercent": 61.40512576219513,
-          "heightPercent": 1.4381432673194436
+          "heightPercent": 1.7024442317602888
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter name"
       },
       {
         "inputId": "date_of_birth",
         "typeId": "date",
         "label": "DOB",
         "bounds": {
-          "xPercent": 74.20828887195123,
-          "yPercent": 5.371843480821616,
+          "xPercent": 74.33833841463415,
+          "yPercent": 5.289387469631157,
           "widthPercent": 21.203791920731707,
           "heightPercent": 1.4664875211661637
         },
@@ -37,15 +38,16 @@
           "dateFormat": "MM/DD/YY",
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "MM/DD/YYYY"
       },
       {
         "inputId": "gender_other",
         "typeId": "textLine",
         "label": "Gender other",
         "bounds": {
-          "xPercent": 7.876638719512195,
-          "yPercent": 7.692928660826031,
+          "xPercent": 3.123399390243903,
+          "yPercent": 9.242659942575276,
           "widthPercent": 8.6,
           "heightPercent": 1.7
         },
@@ -53,15 +55,16 @@
           "useWhiteBackground": true,
           "fontSizePt": 9,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter gender other"
       },
       {
         "inputId": "pronouns_other",
         "typeId": "textLine",
         "label": "Pronouns other",
         "bounds": {
-          "xPercent": 78.4,
-          "yPercent": 8.35,
+          "xPercent": 44.436108993902444,
+          "yPercent": 9.32622027534418,
           "widthPercent": 17.8,
           "heightPercent": 1.7
         },
@@ -69,39 +72,42 @@
           "useWhiteBackground": true,
           "fontSizePt": 9,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter pronouns other"
       },
       {
         "inputId": "address",
         "typeId": "textLine",
         "label": "Address",
         "bounds": {
-          "xPercent": 8.4,
-          "yPercent": 11.75,
-          "widthPercent": 59.8,
-          "heightPercent": 2.1
+          "xPercent": 9.036909298780488,
+          "yPercent": 11.981171317087536,
+          "widthPercent": 59.23168826219512,
+          "heightPercent": 1.5644040344548333
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter address"
       },
       {
         "inputId": "city",
         "typeId": "textLine",
         "label": "City",
         "bounds": {
-          "xPercent": 71,
-          "yPercent": 11.75,
-          "widthPercent": 25,
-          "heightPercent": 2.1
+          "xPercent": 74.0201981707317,
+          "yPercent": 11.984484281822867,
+          "widthPercent": 22.219416920731707,
+          "heightPercent": 1.793366708385482
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter city"
       },
       {
         "inputId": "state",
@@ -117,23 +123,25 @@
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter state"
       },
       {
         "inputId": "zip",
         "typeId": "number",
         "label": "Zip",
         "bounds": {
-          "xPercent": 9.342568597560977,
-          "yPercent": 2.635238901568137,
-          "widthPercent": 11,
-          "heightPercent": 2.1
+          "xPercent": 17.33751905487805,
+          "yPercent": 14.257487300301849,
+          "widthPercent": 9.588986280487806,
+          "heightPercent": 1.6645291909003903
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "123"
       },
       {
         "inputId": "phone",
@@ -149,7 +157,8 @@
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "(555) 555-5555"
       },
       {
         "inputId": "email",
@@ -165,7 +174,8 @@
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "name@example.com"
       },
       {
         "inputId": "emergency_contact_name",
@@ -181,23 +191,25 @@
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter emergency contact name"
       },
       {
         "inputId": "emergency_contact_phone",
         "typeId": "phoneNumber",
         "label": "Emergency phone",
         "bounds": {
-          "xPercent": 74.1,
-          "yPercent": 21.35,
-          "widthPercent": 21.9,
-          "heightPercent": 2.1
+          "xPercent": 76.30798399390244,
+          "yPercent": 19.120742840315103,
+          "widthPercent": 14.522903963414631,
+          "heightPercent": 1.8180298903040566
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "(555) 555-5555"
       },
       {
         "inputId": "relationship_to_patient",
@@ -213,7 +225,8 @@
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter relationship to patient"
       },
       {
         "inputId": "insurance_provider",
@@ -229,7 +242,8 @@
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter provider"
       },
       {
         "inputId": "policy_number",
@@ -238,54 +252,57 @@
         "bounds": {
           "xPercent": 42.4,
           "yPercent": 28.55,
-          "widthPercent": 53.6,
-          "heightPercent": 2.1
+          "widthPercent": 53.41707317073171,
+          "heightPercent": 1.8125082824118384
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter policy number"
       },
       {
         "inputId": "group_number",
         "typeId": "textLine",
         "label": "Group number",
         "bounds": {
-          "xPercent": 14.4,
-          "yPercent": 30.95,
-          "widthPercent": 14.2,
-          "heightPercent": 2.1
+          "xPercent": 41.76423399390244,
+          "yPercent": 26.153563277626443,
+          "widthPercent": 13.081002286585365,
+          "heightPercent": 1.642810866524332
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter group number"
       },
       {
         "inputId": "policyholder_name",
         "typeId": "textLine",
         "label": "Policyholder name",
         "bounds": {
-          "xPercent": 44,
-          "yPercent": 30.95,
-          "widthPercent": 52,
-          "heightPercent": 2.1
+          "xPercent": 43.23304115853659,
+          "yPercent": 31.075156445556946,
+          "widthPercent": 50.25266768292683,
+          "heightPercent": 1.4447691967901055
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter policyholder name"
       },
       {
         "inputId": "insurance_relationship_other",
         "typeId": "textLine",
         "label": "Insurance relationship other",
         "bounds": {
-          "xPercent": 46.8,
-          "yPercent": 33.35,
+          "xPercent": 16.775228658536584,
+          "yPercent": 33.37319075314732,
           "widthPercent": 13,
           "heightPercent": 2
         },
@@ -293,216 +310,230 @@
           "useWhiteBackground": true,
           "fontSizePt": 9,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter insurance relationship other"
       },
       {
         "inputId": "primary_reason_for_visit",
         "typeId": "textArea",
         "label": "Primary reason for visit",
         "bounds": {
-          "xPercent": 18.7,
-          "yPercent": 38.1,
-          "widthPercent": 77.3,
-          "heightPercent": 3.6
+          "xPercent": 21.089481707317074,
+          "yPercent": 35.863012589266,
+          "widthPercent": 76.1795731707317,
+          "heightPercent": 1.8603254067584483
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter primary reason for visit"
       },
       {
         "inputId": "issue_duration",
         "typeId": "textLine",
         "label": "Issue duration",
         "bounds": {
-          "xPercent": 25.8,
-          "yPercent": 42.35,
-          "widthPercent": 2.8,
-          "heightPercent": 3.8
+          "xPercent": 67.51589176829268,
+          "yPercent": 39.628951630714866,
+          "widthPercent": 2.6842416158536584,
+          "heightPercent": 3.529073106088493
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 9,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter issue duration"
       },
       {
         "inputId": "conditions_other",
         "typeId": "textLine",
         "label": "Conditions other",
         "bounds": {
-          "xPercent": 21.8,
-          "yPercent": 51,
-          "widthPercent": 11.2,
-          "heightPercent": 1.8
+          "xPercent": 22.62936356707317,
+          "yPercent": 51.346020761245676,
+          "widthPercent": 5.536413871951218,
+          "heightPercent": 2.6183022896267394
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 9,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter conditions other"
       },
       {
         "inputId": "medications",
         "typeId": "textArea",
         "label": "Medications",
         "bounds": {
-          "xPercent": 43.5,
-          "yPercent": 54.4,
-          "widthPercent": 52.5,
-          "heightPercent": 5
+          "xPercent": 47.5,
+          "yPercent": 50.88420820142825,
+          "widthPercent": 47.398056402439025,
+          "heightPercent": 3.4557903261429725
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter medications"
       },
       {
         "inputId": "allergies",
         "typeId": "textArea",
         "label": "Allergies",
         "bounds": {
-          "xPercent": 41.8,
-          "yPercent": 60.15,
-          "widthPercent": 54.2,
-          "heightPercent": 5
+          "xPercent": 44.391463414634146,
+          "yPercent": 55.790874622690126,
+          "widthPercent": 53.076238567073176,
+          "heightPercent": 4.033350511668998
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter allergies"
       },
       {
         "inputId": "procedures",
         "typeId": "textArea",
         "label": "Procedures and dates",
         "bounds": {
-          "xPercent": 52.8,
-          "yPercent": 65.9,
-          "widthPercent": 43.2,
-          "heightPercent": 5
+          "xPercent": 55.28809070121951,
+          "yPercent": 61.62149009791652,
+          "widthPercent": 38.28669969512195,
+          "heightPercent": 3.14473974821468
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter procedures and dates"
       },
       {
         "inputId": "occupation",
         "typeId": "textLine",
         "label": "Occupation",
         "bounds": {
-          "xPercent": 10.6,
-          "yPercent": 78.75,
-          "widthPercent": 85.4,
-          "heightPercent": 2.1
+          "xPercent": 11.776162347560977,
+          "yPercent": 75.89974600603696,
+          "widthPercent": 83.7812881097561,
+          "heightPercent": 1.6306633291614518
         },
         "displaySettings": {
-          "useWhiteBackground": true,
+          "useWhiteBackground": false,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter occupation"
       },
       {
         "inputId": "barriers_description",
         "typeId": "textLine",
         "label": "Barriers description",
         "bounds": {
-          "xPercent": 18.9,
-          "yPercent": 83.55,
-          "widthPercent": 36.6,
-          "heightPercent": 2.1
+          "xPercent": 18.952400914634143,
+          "yPercent": 80.44575204299491,
+          "widthPercent": 36.35181021341464,
+          "heightPercent": 1.7786424206729001
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter barriers description"
       },
       {
         "inputId": "preferred_pharmacy_name",
         "typeId": "textLine",
         "label": "Preferred pharmacy name",
         "bounds": {
-          "xPercent": 22.8,
-          "yPercent": 88.35,
-          "widthPercent": 5.8,
-          "heightPercent": 2.1
+          "xPercent": 22.9781631097561,
+          "yPercent": 85.12574909813738,
+          "widthPercent": 5.250743140243903,
+          "heightPercent": 1.8879702569388206
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter preferred pharmacy name"
       },
       {
         "inputId": "pharmacy_phone",
         "typeId": "phoneNumber",
         "label": "Pharmacy phone",
         "bounds": {
-          "xPercent": 42.9,
-          "yPercent": 88.35,
-          "widthPercent": 53.1,
-          "heightPercent": 2.1
+          "xPercent": 41.73908155487805,
+          "yPercent": 85.08709784289185,
+          "widthPercent": 52.27921112804878,
+          "heightPercent": 1.5960612530368845
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "(555) 555-5555"
       },
       {
         "inputId": "pharmacy_address",
         "typeId": "textLine",
         "label": "Pharmacy address",
         "bounds": {
-          "xPercent": 8.4,
-          "yPercent": 90.75,
-          "widthPercent": 87.6,
-          "heightPercent": 2.1
+          "xPercent": 8.935442073170732,
+          "yPercent": 87.40869101082235,
+          "widthPercent": 85.51587271341462,
+          "heightPercent": 1.5489435323566223
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Enter pharmacy address"
       },
       {
         "inputId": "signature",
         "typeId": "signature",
         "label": "Signature",
         "bounds": {
-          "xPercent": 10.5,
-          "yPercent": 97.35,
-          "widthPercent": 57.8,
-          "heightPercent": 2
+          "xPercent": 10.096989329268293,
+          "yPercent": 95.5967054406243,
+          "widthPercent": 55.71539634146341,
+          "heightPercent": 1.284031509975705
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "Signature"
       },
       {
         "inputId": "signature_date",
         "typeId": "date",
         "label": "Date",
         "bounds": {
-          "xPercent": 72.6,
-          "yPercent": 97.35,
-          "widthPercent": 23.4,
-          "heightPercent": 2
+          "xPercent": 74.78225990853657,
+          "yPercent": 95.52382021644704,
+          "widthPercent": 18.23469893292683,
+          "heightPercent": 1.578517264227343
         },
         "displaySettings": {
           "useWhiteBackground": true,
           "dateFormat": "MM/DD/YY",
           "fontSizePt": 10,
           "textAlign": "left"
-        }
+        },
+        "placeholderText": "MM/DD/YYYY"
       }
     ],
     "layoutSettings": {
@@ -514,6 +545,6 @@
       "backgroundColor": "#ffffff"
     },
     "sourceAssetPath": "/ai_context/inbox_template/69ab60b5f00f91cc354a1571_67c77655b40960dbb5563104_Patient_Intake_Form.webp",
-    "updatedAt": "2026-04-30T21:41:19.595Z"
+    "updatedAt": "2026-04-30T22:09:51.461Z"
   }
 ]
