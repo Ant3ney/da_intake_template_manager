@@ -202,6 +202,7 @@ a {
 
 .template-stage-wrap {
   display: flex;
+  align-items: flex-start;
   justify-content: center;
   overflow: auto;
   padding: 28px;
@@ -209,6 +210,7 @@ a {
 
 .template-page {
   position: relative;
+  align-self: flex-start;
   width: min(820px, 100%);
   min-width: 360px;
   background: #fff;
@@ -231,10 +233,33 @@ a {
   overflow: hidden;
   border: 1px dashed #0284c7;
   color: #0f172a;
-  cursor: pointer;
+  cursor: move;
   line-height: 1.2;
   padding: 2px 4px;
   pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.template-overlay .overlay-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overlay-resize-handle {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid #0284c7;
+  border-left: 1px solid #0284c7;
+  background: #ffffff;
+  cursor: nwse-resize;
+  pointer-events: auto;
+  touch-action: none;
 }
 
 @media (max-width: 860px) {

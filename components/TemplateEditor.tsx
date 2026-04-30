@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import type { PointerEvent } from "react";
 import type {
   PrintableTemplate,
   TemplateInputBounds,
@@ -27,18 +28,33 @@ function clamp(value: number, min = 0, max = 100) {
 }
 
 function normalizeBounds(bounds: TemplateInputBounds): TemplateInputBounds {
+  const widthPercent = clamp(bounds.widthPercent, 1, 100);
+  const heightPercent = clamp(bounds.heightPercent, 1, 100);
+
   return {
-    xPercent: clamp(bounds.xPercent),
-    yPercent: clamp(bounds.yPercent),
-    widthPercent: clamp(bounds.widthPercent, 1, 100),
-    heightPercent: clamp(bounds.heightPercent, 1, 100),
+    xPercent: clamp(bounds.xPercent, 0, 100 - widthPercent),
+    yPercent: clamp(bounds.yPercent, 0, 100 - heightPercent),
+    widthPercent,
+    heightPercent,
   };
 }
+
+type OverlayDragState = {
+  mode: "move" | "resize";
+  inputId: string;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  pageWidth: number;
+  pageHeight: number;
+  startBounds: TemplateInputBounds;
+};
 
 export function TemplateEditor({ initialTemplate }: { initialTemplate: PrintableTemplate }) {
   const [template, setTemplate] = useState(initialTemplate);
   const [selectedInputId, setSelectedInputId] = useState(initialTemplate.inputDefinitions[0]?.inputId ?? "");
   const [status, setStatus] = useState("Loaded seeded PrintableTemplate data.");
+  const dragStateRef = useRef<OverlayDragState | null>(null);
 
   const selectedInput = useMemo(
     () => template.inputDefinitions.find((input) => input.inputId === selectedInputId) ?? template.inputDefinitions[0],
@@ -96,6 +112,74 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     });
     const blob = await response.blob();
     window.open(URL.createObjectURL(blob), "_blank", "noopener,noreferrer");
+  }
+
+  function startOverlayInteraction(
+    event: PointerEvent<HTMLElement>,
+    input: TemplateInputDefinition,
+    mode: OverlayDragState["mode"],
+  ) {
+    const page = event.currentTarget.closest<HTMLElement>(".template-page");
+    if (!page) return;
+
+    const pageRect = page.getBoundingClientRect();
+    dragStateRef.current = {
+      mode,
+      inputId: input.inputId,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      pageWidth: pageRect.width,
+      pageHeight: pageRect.height,
+      startBounds: input.bounds,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setSelectedInputId(input.inputId);
+    event.preventDefault();
+  }
+
+  function startOverlayDrag(event: PointerEvent<HTMLButtonElement>, input: TemplateInputDefinition) {
+    startOverlayInteraction(event, input, "move");
+  }
+
+  function startOverlayResize(event: PointerEvent<HTMLSpanElement>, input: TemplateInputDefinition) {
+    event.stopPropagation();
+    startOverlayInteraction(event, input, "resize");
+  }
+
+  function updateOverlayInteraction(event: PointerEvent<HTMLElement>) {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    const deltaXPercent = ((event.clientX - dragState.startClientX) / dragState.pageWidth) * 100;
+    const deltaYPercent = ((event.clientY - dragState.startClientY) / dragState.pageHeight) * 100;
+
+    updateInput(dragState.inputId, (input) => ({
+      ...input,
+      bounds:
+        dragState.mode === "resize"
+          ? normalizeBounds({
+              ...dragState.startBounds,
+              widthPercent: dragState.startBounds.widthPercent + deltaXPercent,
+              heightPercent: dragState.startBounds.heightPercent + deltaYPercent,
+            })
+          : normalizeBounds({
+              ...dragState.startBounds,
+              xPercent: dragState.startBounds.xPercent + deltaXPercent,
+              yPercent: dragState.startBounds.yPercent + deltaYPercent,
+            }),
+    }));
+    event.preventDefault();
+  }
+
+  function finishOverlayInteraction(event: PointerEvent<HTMLElement>) {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    dragStateRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
   }
 
   return (
@@ -251,9 +335,21 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
                   fontSize: `${input.displaySettings.fontSizePt ?? 11}pt`,
                   textAlign: input.displaySettings.textAlign ?? "left",
                 }}
+                onPointerDown={(event) => startOverlayDrag(event, input)}
+                onPointerMove={updateOverlayInteraction}
+                onPointerUp={finishOverlayInteraction}
+                onPointerCancel={finishOverlayInteraction}
                 onClick={() => setSelectedInputId(input.inputId)}
               >
-                {input.label}
+                <span className="overlay-label">{input.label}</span>
+                <span
+                  className="overlay-resize-handle"
+                  aria-hidden="true"
+                  onPointerDown={(event) => startOverlayResize(event, input)}
+                  onPointerMove={updateOverlayInteraction}
+                  onPointerUp={finishOverlayInteraction}
+                  onPointerCancel={finishOverlayInteraction}
+                />
               </button>
             ))}
           </div>
