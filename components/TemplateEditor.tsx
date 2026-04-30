@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { defaultPlaceholderForInput } from "@/lib/printable-templates/placeholders";
 import type {
   PrintableTemplate,
+  TemplateCheckOption,
   TemplateInputBounds,
   TemplateInputDefinition,
   TemplateInputTypeId,
@@ -20,6 +21,7 @@ const inputTypes: TemplateInputTypeId[] = [
   "email",
   "number",
   "checkbox",
+  "radio",
   "signature",
   "initials",
 ];
@@ -40,12 +42,31 @@ function normalizeBounds(bounds: TemplateInputBounds): TemplateInputBounds {
   };
 }
 
+function isChoiceInput(typeId: TemplateInputTypeId) {
+  return typeId === "checkbox" || typeId === "radio";
+}
+
+function optionValueFromLabel(label: string) {
+  return label.trim().toLowerCase().replace(/\s+/g, "_") || "option";
+}
+
+function createCheckOption(index: number, bounds?: TemplateInputBounds): TemplateCheckOption {
+  const label = `Option ${index}`;
+  return {
+    optionId: `option_${Date.now()}_${index}`,
+    label,
+    value: optionValueFromLabel(label),
+    bounds: normalizeBounds(bounds ?? { xPercent: 10, yPercent: 10, widthPercent: 2, heightPercent: 1.6 }),
+  };
+}
+
 function normalizeTemplateInputs(template: PrintableTemplate): PrintableTemplate {
   return {
     ...template,
     inputDefinitions: template.inputDefinitions.map((input) => ({
       ...input,
       placeholderText: input.placeholderText?.trim() || defaultPlaceholderForInput(input.typeId, input.label),
+      checkOptions: isChoiceInput(input.typeId) ? input.checkOptions ?? [] : undefined,
     })),
   };
 }
@@ -53,6 +74,7 @@ function normalizeTemplateInputs(template: PrintableTemplate): PrintableTemplate
 type OverlayDragState = {
   mode: "move" | "resize";
   inputId: string;
+  optionId?: string;
   pointerId: number;
   startClientX: number;
   startClientY: number;
@@ -93,6 +115,31 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     setSelectedInputId(input.inputId);
   }
 
+  function addCheckOption(inputId: string) {
+    updateInput(inputId, (input) => ({
+      ...input,
+      checkOptions: [...(input.checkOptions ?? []), createCheckOption((input.checkOptions?.length ?? 0) + 1, input.bounds)],
+    }));
+  }
+
+  function updateCheckOption(
+    inputId: string,
+    optionId: string,
+    updater: (option: TemplateCheckOption) => TemplateCheckOption,
+  ) {
+    updateInput(inputId, (input) => ({
+      ...input,
+      checkOptions: (input.checkOptions ?? []).map((option) => (option.optionId === optionId ? updater(option) : option)),
+    }));
+  }
+
+  function removeCheckOption(inputId: string, optionId: string) {
+    updateInput(inputId, (input) => ({
+      ...input,
+      checkOptions: (input.checkOptions ?? []).filter((option) => option.optionId !== optionId),
+    }));
+  }
+
   function removeSelectedInput() {
     if (!selectedInput) return;
     const remaining = template.inputDefinitions.filter((input) => input.inputId !== selectedInput.inputId);
@@ -118,8 +165,11 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
         pageId: template.pageId,
         inputValues: template.inputDefinitions.map((input) => ({
           inputId: input.inputId,
-          value:
-            input.typeId === "checkbox"
+          value: input.checkOptions?.length
+            ? input.typeId === "checkbox"
+              ? input.checkOptions.map((option) => option.value)
+              : input.checkOptions[0]?.value
+            : input.typeId === "checkbox"
               ? true
               : input.placeholderText ?? defaultPlaceholderForInput(input.typeId, input.label),
         })),
@@ -133,6 +183,8 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     event: PointerEvent<HTMLElement>,
     input: TemplateInputDefinition,
     mode: OverlayDragState["mode"],
+    optionId?: string,
+    startBounds = input.bounds,
   ) {
     const page = event.currentTarget.closest<HTMLElement>(".template-page");
     if (!page) return;
@@ -141,12 +193,13 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     dragStateRef.current = {
       mode,
       inputId: input.inputId,
+      optionId,
       pointerId: event.pointerId,
       startClientX: event.clientX,
       startClientY: event.clientY,
       pageWidth: pageRect.width,
       pageHeight: pageRect.height,
-      startBounds: input.bounds,
+      startBounds,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
     setSelectedInputId(input.inputId);
@@ -162,6 +215,15 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     startOverlayInteraction(event, input, "resize");
   }
 
+  function startCheckOptionDrag(
+    event: PointerEvent<HTMLButtonElement>,
+    input: TemplateInputDefinition,
+    option: TemplateCheckOption,
+  ) {
+    event.stopPropagation();
+    startOverlayInteraction(event, input, "move", option.optionId, option.bounds);
+  }
+
   function updateOverlayInteraction(event: PointerEvent<HTMLElement>) {
     const dragState = dragStateRef.current;
     if (!dragState || dragState.pointerId !== event.pointerId) return;
@@ -169,21 +231,32 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
     const deltaXPercent = ((event.clientX - dragState.startClientX) / dragState.pageWidth) * 100;
     const deltaYPercent = ((event.clientY - dragState.startClientY) / dragState.pageHeight) * 100;
 
-    updateInput(dragState.inputId, (input) => ({
-      ...input,
-      bounds:
-        dragState.mode === "resize"
-          ? normalizeBounds({
-              ...dragState.startBounds,
-              widthPercent: dragState.startBounds.widthPercent + deltaXPercent,
-              heightPercent: dragState.startBounds.heightPercent + deltaYPercent,
-            })
-          : normalizeBounds({
-              ...dragState.startBounds,
-              xPercent: dragState.startBounds.xPercent + deltaXPercent,
-              yPercent: dragState.startBounds.yPercent + deltaYPercent,
-            }),
-    }));
+    const nextBounds =
+      dragState.mode === "resize"
+        ? normalizeBounds({
+            ...dragState.startBounds,
+            widthPercent: dragState.startBounds.widthPercent + deltaXPercent,
+            heightPercent: dragState.startBounds.heightPercent + deltaYPercent,
+          })
+        : normalizeBounds({
+            ...dragState.startBounds,
+            xPercent: dragState.startBounds.xPercent + deltaXPercent,
+            yPercent: dragState.startBounds.yPercent + deltaYPercent,
+          });
+
+    updateInput(dragState.inputId, (input) =>
+      dragState.optionId
+        ? {
+            ...input,
+            checkOptions: (input.checkOptions ?? []).map((option) =>
+              option.optionId === dragState.optionId ? { ...option, bounds: nextBounds } : option,
+            ),
+          }
+        : {
+            ...input,
+            bounds: nextBounds,
+          },
+    );
     event.preventDefault();
   }
 
@@ -271,6 +344,11 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
                       ...input,
                       typeId,
                       placeholderText: defaultPlaceholderForInput(typeId, input.label),
+                      checkOptions: isChoiceInput(typeId)
+                        ? input.checkOptions?.length
+                          ? input.checkOptions
+                          : [createCheckOption(1, input.bounds)]
+                        : undefined,
                     };
                   })
                 }
@@ -341,6 +419,68 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
               />
               White background
             </label>
+            {isChoiceInput(selectedInput.typeId) ? (
+              <div className="check-options-editor">
+                <div className="check-options-header">
+                  <span>Check locations</span>
+                  <button type="button" onClick={() => addCheckOption(selectedInput.inputId)}>Add option</button>
+                </div>
+                {(selectedInput.checkOptions ?? []).map((option, index) => (
+                  <div className="check-option-card" key={option.optionId}>
+                    <label>
+                      Label
+                      <input
+                        value={option.label}
+                        onChange={(event) =>
+                          updateCheckOption(selectedInput.inputId, option.optionId, (current) => {
+                            const label = event.target.value;
+                            const previousDefaultValue = optionValueFromLabel(current.label);
+                            return {
+                              ...current,
+                              label,
+                              value: current.value === previousDefaultValue ? optionValueFromLabel(label) : current.value,
+                            };
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Match value
+                      <input
+                        value={option.value}
+                        onChange={(event) =>
+                          updateCheckOption(selectedInput.inputId, option.optionId, (current) => ({
+                            ...current,
+                            value: event.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                    {(["xPercent", "yPercent", "widthPercent", "heightPercent"] as const).map((key) => (
+                      <label key={key}>
+                        {key}
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.25"
+                          value={option.bounds[key]}
+                          onChange={(event) =>
+                            updateCheckOption(selectedInput.inputId, option.optionId, (current) => ({
+                              ...current,
+                              bounds: normalizeBounds({ ...current.bounds, [key]: Number(event.target.value) }),
+                            }))
+                          }
+                        />
+                      </label>
+                    ))}
+                    <button type="button" onClick={() => removeCheckOption(selectedInput.inputId, option.optionId)}>
+                      Remove {option.label || `option ${index + 1}`}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </form>
         ) : null}
 
@@ -361,35 +501,57 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
           <div dangerouslySetInnerHTML={{ __html: template.html }} />
           <div className="overlay-plane">
             {template.inputDefinitions.map((input) => (
-              <button
-                type="button"
-                key={input.inputId}
-                className={`template-overlay ${input.inputId === selectedInput?.inputId ? "selected" : ""}`}
-                style={{
-                  left: `${input.bounds.xPercent}%`,
-                  top: `${input.bounds.yPercent}%`,
-                  width: `${input.bounds.widthPercent}%`,
-                  height: `${input.bounds.heightPercent}%`,
-                  background: input.displaySettings.useWhiteBackground ? "rgba(255,255,255,.92)" : "rgba(14,165,233,.08)",
-                  fontSize: `${input.displaySettings.fontSizePt ?? 11}pt`,
-                  textAlign: input.displaySettings.textAlign ?? "left",
-                }}
-                onPointerDown={(event) => startOverlayDrag(event, input)}
-                onPointerMove={updateOverlayInteraction}
-                onPointerUp={finishOverlayInteraction}
-                onPointerCancel={finishOverlayInteraction}
-                onClick={() => setSelectedInputId(input.inputId)}
-              >
-                <span className="overlay-label">{input.placeholderText ?? defaultPlaceholderForInput(input.typeId, input.label)}</span>
-                <span
-                  className="overlay-resize-handle"
-                  aria-hidden="true"
-                  onPointerDown={(event) => startOverlayResize(event, input)}
+              <Fragment key={input.inputId}>
+                <button
+                  type="button"
+                  className={`template-overlay ${input.inputId === selectedInput?.inputId ? "selected" : ""}`}
+                  style={{
+                    left: `${input.bounds.xPercent}%`,
+                    top: `${input.bounds.yPercent}%`,
+                    width: `${input.bounds.widthPercent}%`,
+                    height: `${input.bounds.heightPercent}%`,
+                    background: input.displaySettings.useWhiteBackground ? "rgba(255,255,255,.92)" : "rgba(14,165,233,.08)",
+                    fontSize: `${input.displaySettings.fontSizePt ?? 11}pt`,
+                    textAlign: input.displaySettings.textAlign ?? "left",
+                  }}
+                  onPointerDown={(event) => startOverlayDrag(event, input)}
                   onPointerMove={updateOverlayInteraction}
                   onPointerUp={finishOverlayInteraction}
                   onPointerCancel={finishOverlayInteraction}
-                />
-              </button>
+                  onClick={() => setSelectedInputId(input.inputId)}
+                >
+                  <span className="overlay-label">{input.placeholderText ?? defaultPlaceholderForInput(input.typeId, input.label)}</span>
+                  <span
+                    className="overlay-resize-handle"
+                    aria-hidden="true"
+                    onPointerDown={(event) => startOverlayResize(event, input)}
+                    onPointerMove={updateOverlayInteraction}
+                    onPointerUp={finishOverlayInteraction}
+                    onPointerCancel={finishOverlayInteraction}
+                  />
+                </button>
+                {(input.checkOptions ?? []).map((option) => (
+                  <button
+                    type="button"
+                    key={option.optionId}
+                    className={`check-option-overlay ${input.inputId === selectedInput?.inputId ? "selected" : ""}`}
+                    style={{
+                      left: `${option.bounds.xPercent}%`,
+                      top: `${option.bounds.yPercent}%`,
+                      width: `${option.bounds.widthPercent}%`,
+                      height: `${option.bounds.heightPercent}%`,
+                    }}
+                    onPointerDown={(event) => startCheckOptionDrag(event, input, option)}
+                    onPointerMove={updateOverlayInteraction}
+                    onPointerUp={finishOverlayInteraction}
+                    onPointerCancel={finishOverlayInteraction}
+                    onClick={() => setSelectedInputId(input.inputId)}
+                    title={`${input.label}: ${option.label} = ${option.value}`}
+                  >
+                    <span aria-hidden="true" />
+                  </button>
+                ))}
+              </Fragment>
             ))}
           </div>
         </div>

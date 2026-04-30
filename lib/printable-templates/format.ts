@@ -6,7 +6,9 @@ export function valuesByInputId(inputValues: TemplateInputValue[]) {
 
 export function formatInputValue(definition: TemplateInputDefinition, value: TemplateInputValue["value"] | undefined) {
   if (value === null || value === undefined) return "";
+  if (Array.isArray(value)) return value.join(", ");
   if (definition.typeId === "checkbox") return value === true || value === "true" ? "X" : "";
+  if (definition.typeId === "radio") return String(value);
   if (definition.typeId !== "date") return String(value);
 
   const date = new Date(String(value));

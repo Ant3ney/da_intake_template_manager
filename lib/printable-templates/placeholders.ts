@@ -18,6 +18,8 @@ export function defaultPlaceholderForInput(typeId: TemplateInputTypeId, label = 
       return "123";
     case "checkbox":
       return "Checked";
+    case "radio":
+      return "Selected option";
     case "signature":
       return "Signature";
     case "initials":

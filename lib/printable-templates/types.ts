@@ -8,6 +8,7 @@ export type TemplateInputTypeId =
   | "email"
   | "number"
   | "checkbox"
+  | "radio"
   | "signature"
   | "initials";
 
@@ -27,19 +28,27 @@ export type TemplateInputDisplaySettings = {
   textAlign?: "left" | "center" | "right";
 };
 
+export type TemplateCheckOption = {
+  optionId: string;
+  label: string;
+  value: string;
+  bounds: TemplateInputBounds;
+};
+
 export type TemplateInputDefinition = {
   inputId: string;
   typeId: TemplateInputTypeId;
   label: string;
   placeholderText?: string;
   bounds: TemplateInputBounds;
+  checkOptions?: TemplateCheckOption[];
   displaySettings: TemplateInputDisplaySettings;
   required?: boolean;
 };
 
 export type TemplateInputValue = {
   inputId: string;
-  value: string | boolean | number | null;
+  value: string | boolean | number | string[] | null;
 };
 
 export type TemplatePageRenderRequest = {

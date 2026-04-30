@@ -1,4 +1,5 @@
 import { deflateSync } from "zlib";
+import { selectedCheckOptions, shouldDrawSimpleCheck } from "./check-options";
 import { formatInputValue, valuesByInputId } from "./format";
 import type {
   BlankTemplateDocument,
@@ -157,6 +158,20 @@ function pdfY(pageHeight: number, yTop: number, height: number) {
   return pageHeight - yTop - height;
 }
 
+function drawPdfCheckMark(commands: string[], x: number, y: number, w: number, h: number) {
+  const size = Math.min(w, h);
+  const stroke = Math.max(1.1, size * 0.12);
+  const x1 = x + size * 0.18;
+  const y1 = y + size * 0.48;
+  const x2 = x + size * 0.4;
+  const y2 = y + size * 0.22;
+  const x3 = x + size * 0.84;
+  const y3 = y + size * 0.78;
+  commands.push(
+    `q 0 0 0 RG ${stroke.toFixed(2)} w 1 J 1 j ${x1.toFixed(2)} ${y1.toFixed(2)} m ${x2.toFixed(2)} ${y2.toFixed(2)} l ${x3.toFixed(2)} ${y3.toFixed(2)} l S Q`,
+  );
+}
+
 function drawPdfTemplate(commands: string[], pageHeight: number) {
   const tableX = 11;
   const tableY = 22;
@@ -216,7 +231,26 @@ function makePdf(template: PrintableTemplate, inputValues: TemplateInputValue[])
     const w = (definition.bounds.widthPercent / 100) * pdfWidth;
     const h = (definition.bounds.heightPercent / 100) * pageHeight;
     const y = pageHeight - yTop - h;
-    const value = escapePdfText(formatInputValue(definition, values.get(definition.inputId)));
+    const rawValue = values.get(definition.inputId);
+    const checkedOptions = selectedCheckOptions(definition, rawValue);
+
+    if (checkedOptions.length > 0) {
+      for (const option of checkedOptions) {
+        const optionX = (option.bounds.xPercent / 100) * pdfWidth;
+        const optionYTop = (option.bounds.yPercent / 100) * pageHeight;
+        const optionW = (option.bounds.widthPercent / 100) * pdfWidth;
+        const optionH = (option.bounds.heightPercent / 100) * pageHeight;
+        drawPdfCheckMark(commands, optionX, pageHeight - optionYTop - optionH, optionW, optionH);
+      }
+      continue;
+    }
+
+    if (shouldDrawSimpleCheck(definition, rawValue)) {
+      drawPdfCheckMark(commands, x, y, w, h);
+      continue;
+    }
+
+    const value = escapePdfText(formatInputValue(definition, rawValue));
     if (!value) {
       continue;
     }
@@ -280,6 +314,55 @@ function fillRect(pixels: Buffer, x: number, y: number, w: number, h: number, co
   }
 }
 
+function fillCircle(pixels: Buffer, cx: number, cy: number, radius: number, color: [number, number, number, number]) {
+  const x0 = Math.max(0, Math.floor(cx - radius));
+  const y0 = Math.max(0, Math.floor(cy - radius));
+  const x1 = Math.min(pngWidth, Math.ceil(cx + radius));
+  const y1 = Math.min(pngHeight, Math.ceil(cy + radius));
+  const radiusSq = radius * radius;
+  for (let row = y0; row < y1; row += 1) {
+    for (let col = x0; col < x1; col += 1) {
+      const dx = col - cx;
+      const dy = row - cy;
+      if (dx * dx + dy * dy > radiusSq) continue;
+      const offset = (row * pngWidth + col) * 4;
+      pixels[offset] = color[0];
+      pixels[offset + 1] = color[1];
+      pixels[offset + 2] = color[2];
+      pixels[offset + 3] = color[3];
+    }
+  }
+}
+
+function drawPngLine(
+  pixels: Buffer,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  thickness: number,
+  color: [number, number, number, number],
+) {
+  const steps = Math.max(1, Math.ceil(Math.hypot(x2 - x1, y2 - y1)));
+  for (let index = 0; index <= steps; index += 1) {
+    const progress = index / steps;
+    fillCircle(pixels, x1 + (x2 - x1) * progress, y1 + (y2 - y1) * progress, thickness / 2, color);
+  }
+}
+
+function drawPngCheckMark(pixels: Buffer, x: number, y: number, w: number, h: number) {
+  const size = Math.min(w, h);
+  const thickness = Math.max(3, size * 0.12);
+  const x1 = x + size * 0.18;
+  const y1 = y + size * 0.52;
+  const x2 = x + size * 0.4;
+  const y2 = y + size * 0.78;
+  const x3 = x + size * 0.84;
+  const y3 = y + size * 0.22;
+  drawPngLine(pixels, x1, y1, x2, y2, thickness, [15, 23, 42, 255]);
+  drawPngLine(pixels, x2, y2, x3, y3, thickness, [15, 23, 42, 255]);
+}
+
 function makePng(template: PrintableTemplate, inputValues: TemplateInputValue[]) {
   const pixels = Buffer.alloc(pngWidth * pngHeight * 4, 255);
   const values = valuesByInputId(inputValues);
@@ -290,7 +373,28 @@ function makePng(template: PrintableTemplate, inputValues: TemplateInputValue[])
     const y = (definition.bounds.yPercent / 100) * pngHeight;
     const w = (definition.bounds.widthPercent / 100) * pngWidth;
     const h = (definition.bounds.heightPercent / 100) * pngHeight;
-    const hasValue = formatInputValue(definition, values.get(definition.inputId)).length > 0;
+    const rawValue = values.get(definition.inputId);
+    const checkedOptions = selectedCheckOptions(definition, rawValue);
+
+    if (checkedOptions.length > 0) {
+      for (const option of checkedOptions) {
+        drawPngCheckMark(
+          pixels,
+          (option.bounds.xPercent / 100) * pngWidth,
+          (option.bounds.yPercent / 100) * pngHeight,
+          (option.bounds.widthPercent / 100) * pngWidth,
+          (option.bounds.heightPercent / 100) * pngHeight,
+        );
+      }
+      continue;
+    }
+
+    if (shouldDrawSimpleCheck(definition, rawValue)) {
+      drawPngCheckMark(pixels, x, y, w, h);
+      continue;
+    }
+
+    const hasValue = formatInputValue(definition, rawValue).length > 0;
     if (definition.displaySettings.useWhiteBackground) {
       fillRect(pixels, x, y, w, h, [255, 255, 255, 255]);
     }

@@ -201,6 +201,45 @@ a {
   width: auto;
 }
 
+.check-options-editor {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 10px;
+}
+
+.check-options-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.check-options-header button,
+.check-option-card button {
+  border: 1px solid #bfcbda;
+  background: #ffffff;
+  color: #172033;
+  cursor: pointer;
+  padding: 8px 10px;
+}
+
+.check-option-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  border: 1px solid #d8e0eb;
+  border-radius: 6px;
+  background: #f8fafc;
+  padding: 10px;
+}
+
+.check-option-card button {
+  grid-column: 1 / -1;
+}
+
 .template-stage-wrap {
   display: flex;
   align-items: flex-start;
@@ -240,6 +279,32 @@ a {
   pointer-events: auto;
   touch-action: none;
   user-select: none;
+}
+
+.check-option-overlay {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  border: 1px solid #0f766e;
+  background: rgba(20, 184, 166, .14);
+  color: #0f172a;
+  cursor: move;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.check-option-overlay.selected {
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, .24);
+}
+
+.check-option-overlay span {
+  width: 72%;
+  height: 42%;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-10%) rotate(-45deg);
 }
 
 .template-overlay .overlay-label {
