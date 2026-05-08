@@ -1,9 +1,17 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const { patientIntakeTemplate } = await import("../lib/printable-templates/patient-intake-template.ts");
+const { patientIntakeTemplate } = await import("../lib/printable-templates/templates/patient-intake-form.ts");
+const { spaIntakeInternalTemplate } = await import("../lib/printable-templates/templates/spa-intake-internal.ts");
+const printableTemplateCatalog = [patientIntakeTemplate, spaIntakeInternalTemplate];
 const now = new Date().toISOString();
-const templates = [{ ...patientIntakeTemplate, updatedAt: now }];
+const templates = printableTemplateCatalog.map((template) => {
+  const seededTemplate = { ...template, updatedAt: now };
+  delete seededTemplate.html;
+  delete seededTemplate.css;
+  delete seededTemplate.javascript;
+  return seededTemplate;
+});
 
 const dataDir = path.join(process.cwd(), "data");
 await mkdir(dataDir, { recursive: true });

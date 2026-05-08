@@ -3,7 +3,8 @@ import { listPrintableTemplates } from "@/lib/printable-templates/store";
 
 export async function GET() {
   const templates = await listPrintableTemplates();
-  return Response.json(
-    templates.map((template) => toRenderedDocument(template, "application/pdf", renderTemplatePdf(template))),
+  const documents = await Promise.all(
+    templates.map(async (template) => toRenderedDocument(template, "application/pdf", await renderTemplatePdf(template))),
   );
+  return Response.json(documents);
 }

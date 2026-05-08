@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   for (const pageRequest of body.pageRenderRequests ?? []) {
     const template = await getPrintableTemplate(pageRequest.pageId);
     if (!template) continue;
-    documents.push(toRenderedDocument(template, "image/png", renderTemplatePng(template, pageRequest.inputValues ?? [])));
+    documents.push(toRenderedDocument(template, "image/png", await renderTemplatePng(template, pageRequest.inputValues ?? [])));
   }
 
   return Response.json(documents);

@@ -18,13 +18,15 @@
       "type": "string",
       "required": true
     },
-    "html": {
-      "type": "text",
+    "backgroundImage": {
+      "type": "json",
       "required": true
     },
+    "html": {
+      "type": "text"
+    },
     "css": {
-      "type": "text",
-      "required": true
+      "type": "text"
     },
     "javascript": {
       "type": "text"

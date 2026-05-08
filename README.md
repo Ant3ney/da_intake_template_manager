@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Printable Intake Template Manager
 
-## Getting Started
+This is a Next.js application for managing fixed-layout printable intake documents. The core entity is a `PrintableTemplate`: a single-page, letter-sized background image plus coordinate-based input overlays.
 
-First, run the development server:
+The project currently supports:
+
+- A dashboard listing all available base templates.
+- A GUI editor for positioning and configuring input overlays.
+- Local seeded template storage in `data/printable-templates.json`.
+- Optional Strapi-backed template storage when `STRAPI_API_URL` is configured.
+- PDF and PNG render routes for blank and completed templates.
+- A template catalog for adding new base templates over time.
+
+## Useful Docs
+
+- [Project architecture](docs/printable-template-manager.md)
+- [TemplateEditor guide](docs/template-editor.md)
+- [Updated build prompt](docs/updated-build-prompt.md)
+- [Strapi collection notes](docs/strapi/printable-template.md)
+
+## Commands
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run lint
+npm run seed
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`npm run dev` starts Next.js and, if a Strapi project exists at `./strapi`, starts Strapi too. Without Strapi, the app uses `data/printable-templates.json`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Main URLs
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Dashboard: `http://localhost:3000`
+- Editor fallback: `/dev/test-template-editor`
+- Editor for one template: `/dev/test-template-editor/[pageId]`
+- All schemas: `/api/templates/schema`

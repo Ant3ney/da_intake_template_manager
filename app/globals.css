@@ -80,14 +80,40 @@ a {
   gap: 12px;
 }
 
-.template-table article {
+.template-table-header {
+  margin-bottom: 2px;
+}
+
+.template-table-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.template-table-header p {
+  margin: 5px 0 0;
+  color: #66758a;
+}
+
+.template-option {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   border: 1px solid #d7e0ec;
   border-radius: 8px;
   background: #fff;
+  color: inherit;
   padding: 16px;
+  text-decoration: none;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.template-option:hover,
+.template-option:focus-visible {
+  border-color: #0f766e;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .08);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .template-table h2 {
@@ -98,6 +124,27 @@ a {
 .template-table p {
   margin: 4px 0 0;
   color: #66758a;
+}
+
+.template-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.template-actions span {
+  color: #66758a;
+}
+
+.template-edit-button {
+  border: 1px solid #0f766e;
+  border-radius: 6px;
+  background: #0f766e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 8px 10px;
 }
 
 .template-editor-shell {
@@ -263,10 +310,18 @@ a {
   box-shadow: 0 20px 70px rgba(15, 23, 42, .18);
 }
 
-.template-page > div:first-of-type,
+.template-background-image,
 .overlay-plane {
   position: absolute;
   inset: 0;
+}
+
+.template-background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+  pointer-events: none;
 }
 
 .overlay-plane {

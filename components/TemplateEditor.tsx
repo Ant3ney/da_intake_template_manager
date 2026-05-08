@@ -643,8 +643,13 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
           className="template-page"
           style={{ aspectRatio: `${template.layoutSettings.widthIn} / ${template.layoutSettings.heightIn}` }}
         >
-          <style>{template.css}</style>
-          <div dangerouslySetInnerHTML={{ __html: template.html }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="template-background-image"
+            src={template.backgroundImage.src}
+            alt={`${template.name} background`}
+            draggable={false}
+          />
           <div className="overlay-plane">
             {template.inputDefinitions.map((input) => (
               <Fragment key={input.inputId}>

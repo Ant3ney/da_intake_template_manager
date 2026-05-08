@@ -1,4 +1,3 @@
-import { patientIntakeTemplate } from "./patient-intake-template";
-import type { PrintableTemplate } from "./types";
+import { printableTemplateCatalog } from "./templates";
 
-export const samplePrintableTemplates: PrintableTemplate[] = [patientIntakeTemplate];
+export const samplePrintableTemplates = printableTemplateCatalog;

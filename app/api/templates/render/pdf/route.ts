@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     return Response.json({ error: `PrintableTemplate not found for pageId ${body.pageId}` }, { status: 404 });
   }
 
-  return new Response(renderTemplatePdf(template, body.inputValues ?? []), {
+  return new Response(new Uint8Array(await renderTemplatePdf(template, body.inputValues ?? [])), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="${template.pageId}.pdf"`,

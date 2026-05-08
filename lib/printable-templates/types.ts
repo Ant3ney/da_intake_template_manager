@@ -81,9 +81,15 @@ export type TemplateInputSchema = {
 export type PrintableTemplate = {
   pageId: string;
   name: string;
-  html: string;
-  css: string;
-  javascript: string;
+  backgroundImage: {
+    src: string;
+    widthPx: number;
+    heightPx: number;
+    mimeType: "image/png" | "image/jpeg" | "image/webp";
+  };
+  html?: string;
+  css?: string;
+  javascript?: string;
   inputDefinitions: TemplateInputDefinition[];
   layoutSettings: {
     paperSize: "letter";

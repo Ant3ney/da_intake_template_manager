@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const template = await getPrintableTemplate(pageRequest.pageId);
     if (!template) continue;
     documents.push(
-      toRenderedDocument(template, "application/pdf", renderTemplatePdf(template, pageRequest.inputValues ?? [])),
+      toRenderedDocument(template, "application/pdf", await renderTemplatePdf(template, pageRequest.inputValues ?? [])),
     );
   }
 
