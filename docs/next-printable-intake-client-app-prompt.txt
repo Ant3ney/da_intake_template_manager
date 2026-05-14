@@ -1,0 +1,265 @@
+You are working in a Next.js App Router project that must become a client application for an existing Printable Intake Template Manager API.
+
+Build the actual application, not a landing page. The app must ask the user all questions needed to complete every PrintableTemplate exposed by the API, then call the API to render all PDF documents and download them for the user.
+
+Source API
+- The Printable Intake Template Manager runs separately.
+- Configure its base URL through an environment variable named NEXT_PUBLIC_TEMPLATE_MANAGER_BASE_URL for client display only and TEMPLATE_MANAGER_BASE_URL for server-side API calls.
+- Default local value: http://localhost:3000
+- Do not hardcode a production URL.
+- Because browser CORS may not be enabled on the template manager, call the template manager from this new app through server-side route handlers in this new app.
+
+Template discovery endpoint
+- Method: GET
+- URL: {TEMPLATE_MANAGER_BASE_URL}/api/templates/schema
+- Response shape:
+[
+  {
+    "pageId": "string",
+    "inputs": [
+      {
+        "inputId": "string",
+        "typeId": "textArea" | "textLine" | "date" | "phoneNumber" | "firstName" | "lastName" | "email" | "number" | "checkbox" | "radio" | "signature" | "initials",
+        "label": "string",
+        "placeholderText": "string optional",
+        "bounds": {
+          "xPercent": number,
+          "yPercent": number,
+          "widthPercent": number,
+          "heightPercent": number
+        },
+        "checkOptions": [
+          {
+            "optionId": "string",
+            "label": "string",
+            "value": "string",
+            "bounds": {
+              "xPercent": number,
+              "yPercent": number,
+              "widthPercent": number,
+              "heightPercent": number
+            },
+            "textBoxBounds": {
+              "xPercent": number,
+              "yPercent": number,
+              "widthPercent": number,
+              "heightPercent": number
+            },
+            "textPlaceholderText": "string optional",
+            "isOtherOption": true
+          }
+        ],
+        "displaySettings": {
+          "dateFormat": "MMDDYY" | "YYMMDD" | "MM/DD/YY" | "YYYY-MM-DD",
+          "useWhiteBackground": boolean,
+          "fontSizePt": number,
+          "textAlign": "left" | "center" | "right"
+        },
+        "required": boolean
+      }
+    ]
+  }
+]
+
+PDF render endpoint
+- Prefer the batch endpoint.
+- Method: POST
+- URL: {TEMPLATE_MANAGER_BASE_URL}/api/templates/render-batch/pdf
+- Request JSON:
+{
+  "pageRenderRequests": [
+    {
+      "pageId": "string",
+      "inputValues": [
+        {
+          "inputId": "string",
+          "value": "string | boolean | number | string[] | { selected: string | string[], otherText?: string } | null"
+        }
+      ]
+    }
+  ]
+}
+- Response JSON:
+[
+  {
+    "pageId": "string",
+    "fileName": "string.pdf",
+    "mimeType": "application/pdf",
+    "fileDataBase64": "base64 string"
+  }
+]
+
+Single PDF render endpoint, only if needed
+- Method: POST
+- URL: {TEMPLATE_MANAGER_BASE_URL}/api/templates/render/pdf
+- Request JSON:
+{
+  "pageId": "string",
+  "inputValues": [
+    {
+      "inputId": "string",
+      "value": "string | boolean | number | string[] | { selected: string | string[], otherText?: string } | null"
+    }
+  ]
+}
+- Response: application/pdf binary.
+
+Value formatting rules
+- textLine, textArea, firstName, lastName, email, phoneNumber, signature, initials: send a string.
+- number: send a number when possible; otherwise send a numeric string only if the user input cannot be safely converted.
+- date: send an ISO date string in YYYY-MM-DD format from an HTML date input. The template manager formats the date for each form using its own displaySettings.dateFormat.
+- checkbox with checkOptions: send an array of selected option values. Use each option.value from the schema, not the label, as the submitted selected value.
+- radio with checkOptions: send the selected option.value string.
+- checkbox or radio option with isOtherOption: true: send { selected, otherText }. For checkbox, selected should be an array that includes the other option value. For radio, selected should be the other option value string. otherText should contain the free text typed by the user.
+- checkbox or radio without checkOptions: send true when selected and false or null when not selected.
+- Empty unanswered optional fields should still be represented with value: null, or omitted from inputValues. Prefer including every inputId with null for clarity.
+
+Application behavior
+- On load, fetch /api/template-schema from this new app. That route handler must proxy GET {TEMPLATE_MANAGER_BASE_URL}/api/templates/schema.
+- Treat every pageId returned by the schema as a document that must be answered and generated.
+- Build the question set directly from the fetched schema. Do not hardcode template IDs or field lists.
+- Group questions by document pageId and show the current document name as the pageId converted to title case unless the app has a better name available.
+- Ask every input from every document.
+- If the same inputId appears in multiple documents with the same typeId and compatible checkOptions, ask it once globally and reuse the answer across those documents.
+- If the same inputId appears with different typeId or incompatible checkOptions, namespace it internally as pageId::inputId and ask it separately for that document.
+- Preserve the original inputId when sending API requests. Never send namespaced IDs to the template manager.
+- For choice compatibility, options are compatible only when option.value arrays match in the same order.
+- Show progress: current section/document, answered count, total question count.
+- Provide Previous and Next navigation, validation, and a final Review screen.
+- Required fields from schema must be validated before generation.
+- Email fields must use email input validation.
+- Phone fields should use tel input and preserve user formatting.
+- Date fields must use date inputs.
+- textArea fields must use textarea.
+- checkbox fields with checkOptions must allow multiple selections.
+- radio fields with checkOptions must allow exactly one selection unless optional and unanswered.
+- Other options must reveal a text input when selected.
+- The final screen must have a primary Generate PDFs button.
+
+Server route handlers to create in the new app
+1. GET /api/template-schema
+- Reads TEMPLATE_MANAGER_BASE_URL from process.env.
+- Fetches {baseUrl}/api/templates/schema with cache: "no-store".
+- Returns the JSON unchanged.
+- If upstream fails, return a clear JSON error and matching non-2xx status.
+
+2. POST /api/generate-documents
+- Accepts:
+{
+  "pageRenderRequests": [
+    {
+      "pageId": "string",
+      "inputValues": [
+        { "inputId": "string", "value": "..." }
+      ]
+    }
+  ]
+}
+- Sends that JSON to {baseUrl}/api/templates/render-batch/pdf.
+- Returns the upstream JSON unchanged.
+- Validate that pageRenderRequests is an array before proxying.
+- If upstream fails, return a clear JSON error and matching non-2xx status.
+
+Client generation flow
+- Convert the completed answers into one TemplatePageRenderRequest per schema page.
+- For each page, include inputValues for all inputs on that page.
+- POST to this new app's /api/generate-documents.
+- The response is an array of rendered documents.
+- For each document, convert fileDataBase64 to a Blob with MIME application/pdf and trigger a download using document.fileName.
+- If multiple PDFs are returned, download each PDF separately. Do not require a zip dependency unless the project already has one.
+- Show success and list the downloaded file names.
+- Show an actionable error if no documents are returned.
+
+TypeScript types to add in the new app
+type TemplateInputTypeId =
+  | "textArea"
+  | "textLine"
+  | "date"
+  | "phoneNumber"
+  | "firstName"
+  | "lastName"
+  | "email"
+  | "number"
+  | "checkbox"
+  | "radio"
+  | "signature"
+  | "initials";
+
+type TemplateInputBounds = {
+  xPercent: number;
+  yPercent: number;
+  widthPercent: number;
+  heightPercent: number;
+};
+
+type TemplateCheckOption = {
+  optionId: string;
+  label: string;
+  value: string;
+  bounds: TemplateInputBounds;
+  textBoxBounds?: TemplateInputBounds;
+  textPlaceholderText?: string;
+  isOtherOption?: boolean;
+};
+
+type TemplateInputDefinition = {
+  inputId: string;
+  typeId: TemplateInputTypeId;
+  label: string;
+  placeholderText?: string;
+  bounds: TemplateInputBounds;
+  checkOptions?: TemplateCheckOption[];
+  displaySettings: {
+    dateFormat?: "MMDDYY" | "YYMMDD" | "MM/DD/YY" | "YYYY-MM-DD";
+    useWhiteBackground: boolean;
+    fontSizePt?: number;
+    textAlign?: "left" | "center" | "right";
+  };
+  required?: boolean;
+};
+
+type TemplateInputValue = {
+  inputId: string;
+  value: string | boolean | number | string[] | { selected: string | string[]; otherText?: string } | null;
+};
+
+type TemplatePageSchema = {
+  pageId: string;
+  inputs: TemplateInputDefinition[];
+};
+
+type TemplatePageRenderRequest = {
+  pageId: string;
+  inputValues: TemplateInputValue[];
+};
+
+type RenderedTemplateDocument = {
+  pageId: string;
+  fileName: string;
+  mimeType: "application/pdf";
+  fileDataBase64: string;
+};
+
+Recommended UI
+- Use a clean intake workflow: left sidebar or top progress indicator, main question panel, sticky footer with navigation.
+- Avoid a marketing hero.
+- The first screen should immediately show the intake/question workflow once schema loads.
+- Include loading, error, empty-schema, generating, and success states.
+- Keep controls dense and practical.
+- Do not display bounds or internal technical fields to the user.
+
+Implementation notes
+- Use App Router conventions for the installed Next.js version in the target project.
+- Keep the API base URL server-side for proxying.
+- Use "use client" only for interactive questionnaire components.
+- Keep schema fetching in a server route or server component, but the questionnaire itself can fetch /api/template-schema from the browser.
+- Avoid storing answers beyond local component state unless the user specifically asks for persistence.
+- Do not modify the Printable Intake Template Manager project from this new app.
+
+Acceptance criteria
+- Running the new Next.js app with TEMPLATE_MANAGER_BASE_URL pointing at the Printable Intake Template Manager lets a user answer all questions from every returned schema page.
+- Clicking Generate PDFs sends a POST to /api/generate-documents in the new app.
+- The new app's /api/generate-documents posts to {TEMPLATE_MANAGER_BASE_URL}/api/templates/render-batch/pdf using the exact request shape documented above.
+- The user receives every returned PDF as a browser download.
+- The implementation handles checkbox, radio, Other-option, date, email, phone, number, text line, and text area inputs correctly.
+- The app does not hardcode a fixed list of documents; it adapts to every document returned by /api/templates/schema.
