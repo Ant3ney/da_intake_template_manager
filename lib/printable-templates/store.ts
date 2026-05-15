@@ -24,14 +24,16 @@ function withInputPlaceholder(input: TemplateInputDefinition): TemplateInputDefi
 
   return {
     ...input,
+    notes: input.notes ?? "",
     placeholderText: input.placeholderText?.trim() || defaultPlaceholderForInput(input.typeId, input.label),
     checkOptions,
   };
 }
 
-function withTemplateInputPlaceholders(template: PrintableTemplate): PrintableTemplate {
+export function normalizePrintableTemplate(template: PrintableTemplate): PrintableTemplate {
   return {
     ...template,
+    notes: template.notes ?? "",
     inputDefinitions: template.inputDefinitions.map(withInputPlaceholder),
   };
 }
@@ -39,9 +41,9 @@ function withTemplateInputPlaceholders(template: PrintableTemplate): PrintableTe
 async function readSeededTemplates(): Promise<PrintableTemplate[]> {
   try {
     const raw = await fs.readFile(dataPath, "utf8");
-    return (JSON.parse(raw) as PrintableTemplate[]).map(withTemplateInputPlaceholders);
+    return (JSON.parse(raw) as PrintableTemplate[]).map(normalizePrintableTemplate);
   } catch {
-    return samplePrintableTemplates.map(withTemplateInputPlaceholders);
+    return samplePrintableTemplates.map(normalizePrintableTemplate);
   }
 }
 
@@ -64,7 +66,7 @@ export async function listPrintableTemplates(): Promise<PrintableTemplate[]> {
 
   const payload = await response.json();
   return (payload.data ?? []).map((entry: { attributes?: PrintableTemplate } & PrintableTemplate) =>
-    withTemplateInputPlaceholders(entry.attributes ?? entry)
+    normalizePrintableTemplate(entry.attributes ?? entry)
   );
 }
 
@@ -73,11 +75,27 @@ export async function getPrintableTemplate(pageId: string): Promise<PrintableTem
   return templates.find((template) => template.pageId === pageId) ?? null;
 }
 
+export async function getPrintableTemplateByIdentifier(identifier: string): Promise<PrintableTemplate | null> {
+  const normalizedIdentifier = identifier.trim();
+  if (!normalizedIdentifier) return null;
+
+  const templates = await listPrintableTemplates();
+  return (
+    templates.find(
+      (template) =>
+        template.pageId === normalizedIdentifier ||
+        template.name === normalizedIdentifier ||
+        template.backgroundImage.src === normalizedIdentifier ||
+        template.sourceAssetPath === normalizedIdentifier,
+    ) ?? null
+  );
+}
+
 export async function saveSeededTemplates(templates: PrintableTemplate[]) {
   await fs.mkdir(path.dirname(dataPath), { recursive: true });
   await fs.writeFile(
     dataPath,
-    `${JSON.stringify(templates.map(withTemplateInputPlaceholders), null, 2)}\n`,
+    `${JSON.stringify(templates.map(normalizePrintableTemplate), null, 2)}\n`,
     "utf8",
   );
 }

@@ -1,0 +1,67 @@
+import type { PrintableTemplate, TemplateInputDefinition } from "../types";
+
+const answerLine = (
+  question: number,
+  xPercent: number,
+  lineYPercent: number,
+  widthPercent = 3.0,
+): TemplateInputDefinition => ({
+  inputId: `question_${question}_answer`,
+  typeId: "textLine",
+  label: `Question ${question} answer`,
+  notes: {
+    16: "Question 16: Ever feel that no one in your family loved you or thought you were special? Enter the selected letter. Choices: a Yes; b No.",
+    17: "Question 17: Ever feel your needs were ignored? Enter the selected letter. Choices: a Yes; b No.",
+    18: "Question 18: Ever feel that either of your parents used street drugs, abused alcohol, or misused prescription drugs? Enter the selected letter. Choices: a Yes; b No.",
+    19: "Question 19: Feel the quality of your relationship with your mother or mother figure was. Enter the selected letter. Choices: a Very Good; b Good; c Bad; d Very Bad.",
+    20: "Question 20: Feel the quality of your relationship with your father or father figure was. Enter the selected letter. Choices: a Very Good; b Good; c Bad; d Very Bad.",
+    21: "Question 21: Ever feel your mother or mother figure was physically, verbally or sexually abused by her partner? Enter the selected letter. Choices: a Yes, and I witnessed the abuse; b Yes, but I didn't witness the abuse; c No.",
+    22: "Question 22: Ever feel your father or father figure was physically, verbally or sexually abused by his partner? Enter the selected letter. Choices: a Yes, and I witnessed the abuse; b Yes, but I didn't witness the abuse; c No.",
+    23: "Question 23: Ever feel your parents had marital problems? Enter the selected letter. Choices: a Yes; b No.",
+    24: "Question 24: Ever feel any of your brothers or sisters were physically, verbally or sexually abused? Enter the selected letter. Choices: a Yes, and I witnessed the abuse; b Yes, but I didn't witness the abuse; c No; d I have no birth or adopted brothers or sisters.",
+    25: "Question 25: Is your parent partner a problem drinker or alcoholic; abuses prescription drugs or uses street drugs? Enter the selected letter. Choices: a Yes; b No.",
+    26: "Question 26: Do you think your parent partner was abused or neglected as a child? Enter the selected letter. Choices: a Yes; b No.",
+    27: "Question 27: Do you think your parent partner had brothers or sisters who were physically, verbally or sexually abused as children by their parents? Enter the selected letter. Choices: a Yes and s/he witnessed the abuse; b Yes but s/he didn't witness the abuse; c No; d My parent partner has no brothers or sisters.",
+    28: "Question 28: Has your parent partner physically, verbally or sexually abused you? Enter the selected letter. Choices: a Yes; b No.",
+    29: "Question 29: Have you physically, verbally, or sexually abused your parent partner? Enter the selected letter. Choices: a Yes; b No.",
+    30: "Question 30: Please rate the quality of the relationship you have with your parent partner. Enter the selected letter. Choices: a Very Good; b Good; c Bad; d Very Bad.",
+    31: "Question 31: If you were to do it all over again, would you still choose your parent partner as the mother or father of your children? Enter the selected letter. Choices: a Yes; b Yes, but under different conditions; c Maybe; d No.",
+  }[question],
+  bounds: { xPercent, yPercent: lineYPercent - 0.85, widthPercent, heightPercent: 1.7 },
+  displaySettings: { useWhiteBackground: true, fontSizePt: 9, textAlign: "left" },
+});
+
+export const nurturingSkillsForFamiliesChildhoodParentPartnerPage2Template: PrintableTemplate = {
+  pageId: "nurturing-skills-for-families-childhood-parent-partner-page-2",
+  name: "Nurturing Skills for Families Childhood and Parent Partner Page 2",
+  notes:
+    "Nurturing Skills Competency Scale page 2. All numbered inputs on this page are short letter-entry lines where the respondent writes the selected answer letter from the visible choices for Questions 16-31. There are no separate Other text fields on this page.",
+  backgroundImage: {
+    src: "/template-assets/nurturing-skills-for-families-childhood-parent-partner-page-2.png",
+    widthPx: 1086,
+    heightPx: 1448,
+    mimeType: "image/png",
+  },
+  inputDefinitions: [
+    answerLine(16, 44.8, 14.4),
+    answerLine(17, 44.8, 21.6),
+    answerLine(18, 44.8, 28.9),
+    answerLine(19, 44.8, 38.1),
+    answerLine(20, 44.8, 48.6),
+    answerLine(21, 44.8, 59.0),
+    answerLine(22, 44.8, 68.5),
+    answerLine(23, 44.8, 78.2),
+    answerLine(24, 44.8, 84.3),
+    answerLine(25, 90.1, 26.9),
+    answerLine(26, 90.1, 37.2),
+    answerLine(27, 90.1, 46.9),
+    answerLine(28, 90.1, 57.6),
+    answerLine(29, 90.1, 65.8),
+    answerLine(30, 90.1, 74.9),
+    answerLine(31, 90.1, 84.2),
+  ],
+  layoutSettings: { paperSize: "letter", widthIn: 8.5, heightIn: 11 },
+  displaySettings: { backgroundColor: "#ffffff" },
+  sourceAssetPath: "ai_context/inbox_template/nurturing-skills-for-families-childhood-parent-partner-page-2-02.png",
+  updatedAt: "2026-05-14T16:50:37-07:00",
+};

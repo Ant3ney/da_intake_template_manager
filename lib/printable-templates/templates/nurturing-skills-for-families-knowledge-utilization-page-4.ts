@@ -1,0 +1,103 @@
+import type { PrintableTemplate, TemplateCheckOption, TemplateInputDefinition } from "../types";
+
+const answerLine = (question: number, xPercent: number, lineYPercent: number): TemplateInputDefinition => ({
+  inputId: `question_${question}_answer`,
+  typeId: "textLine",
+  label: `Question ${question} answer`,
+  notes: {
+    49: "Question 49: Pick the right way to Praise a child for Being. Enter the selected letter. Choices: a You are such a good child for helping me; b You make me feel so happy when you get good grades; c You are a wonderful child; d You are such a nice girl when you cooperate.",
+    50: "Question 50: Which of the following are good rewards to use as discipline? Enter the selected letter. Choices: a Praise and some hugs; b Privilege like staying up a little later; c Gifts like toys, CDs, DVDs; d At times, all these are good rewards to use.",
+    51: "Question 51: Family rules are important because. Enter the selected letter. Choices: a Children need to learn to be obedient; b Children need to learn how to cooperate; c Children need to respect authority; d Children need to listen to their parents.",
+    52: "Question 52: Why do parents spank their children? Enter the selected letter. Choices: a The Bible says spare the rod, spoil the child; b Because parents were spanked as children; c Because they love their children; d Parents spank children for all these reasons.",
+    53: "Question 53: Which of the following is a healthy way to manage and reduce stress? Enter the selected letter. Choices: a Use a punching bag to release your energy; b Get away and leave your kids for a while; c Exercise daily and practice deep breathing; d It depends on what works for the parents - everybody is different.",
+    54: "Question 54: Pick the right way to Praise a child for Doing. Enter the selected letter. Choices: a Good job cleaning your room - mommy really loves you; b You really sing well; c You did pretty well - next time try harder; d Do well and make your family proud of you.",
+    55: "Question 55: Teaching children to hit a pillow or punching bag is a good way for them to release their anger. Enter the selected letter. Choices: a Hitting is a good way to release anger energy; b Hitting teaches kids to hit when they're angry; c Hitting is OK as long as you don't get carried away; d Hitting something is a very quick way to calm down.",
+    56: "Question 56: Our self-worth is. Enter the selected letter. Choices: a Developed from the ways others think about us; b The thoughts and feelings we have about ourselves; c Learned in childhood and is difficult to change; d Depends upon the opinions of others.",
+    57: "Question 57: Teaching children the correct names for their sexual body parts. Enter the selected letter. Choices: a Is the first step in building positive sexual self-worth; b Helps children feel good about their bodies; c Helps children learn to say No to unwanted touch; d All of the above.",
+    58: "Question 58: The best way to help children understand their feelings is to. Enter the selected letter. Choices: a Listen quietly and attentively; b Respect the child's feelings; c Encourage the child to talk; d All of the above.",
+    59: "Question 59: Anger is. Enter the selected letter. Choices: a Past hurt feelings that are finally being expressed; b Anger is a feeling that causes people to become violent; c Getting angry is a good way to release stress; d Anger lets others know you are mad at them.",
+    60: "Question 60: Which of the following is a good way to build self-worth in children? Enter the selected letter. Choices: a Listen and honor their opinions; b Provide children with choices and consequences for their behavior; c Don't blame them for the way parents feel; d All of these are good ways to build self-worth.",
+  }[question],
+  bounds: { xPercent, yPercent: lineYPercent - 0.85, widthPercent: 3.2, heightPercent: 1.7 },
+  displaySettings: { useWhiteBackground: true, fontSizePt: 9, textAlign: "left" },
+});
+
+const option = (value: string, label: string, xPercent: number, yPercent: number): TemplateCheckOption => ({
+  optionId: `rating_${value}`,
+  label,
+  value,
+  bounds: { xPercent, yPercent, widthPercent: 1.3, heightPercent: 1.4 },
+});
+
+const ratingRow = (question: number, yPercent: number): TemplateInputDefinition => ({
+  inputId: `question_${question}_rating`,
+  typeId: "radio",
+  label: `Question ${question} rating`,
+  notes: {
+    61: "Question 61: Make the time to nurture myself. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    62: "Question 62: Recognize my personal strengths. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    63: "Question 63: Respond to my children's needs with empathy. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    64: "Question 64: Give my children choices and consequences. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    65: "Question 65: Have expectations for my children to succeed. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    66: "Question 66: Spend time having fun with my children. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    67: "Question 67: Praise my children for being wonderful kids. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    68: "Question 68: Praise my children for doing their best. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    69: "Question 69: Model appropriate ways to manage my stress. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    70: "Question 70: Honor my children's wants and desires. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    71: "Question 71: Help my children improve their self-worth. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    72: "Question 72: Refer to our family rules to help guide my children. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+    73: "Question 73: Use positive discipline rather than spank or hit my children. Select one rating. Rating choices: 0 Don't practice the skill at all; 1 Sometimes; 2 Often; 3 Regularly.",
+  }[question],
+  bounds: { xPercent: 84.3, yPercent: yPercent - 0.55, widthPercent: 8.8, heightPercent: 2.0 },
+  checkOptions: [
+    option("0", "0", 84.8, yPercent - 0.55),
+    option("1", "1", 87.4, yPercent - 0.55),
+    option("2", "2", 90.0, yPercent - 0.55),
+    option("3", "3", 92.5, yPercent - 0.55),
+  ],
+  displaySettings: { useWhiteBackground: false, fontSizePt: 9, textAlign: "left" },
+});
+
+export const nurturingSkillsForFamiliesKnowledgeUtilizationPage4Template: PrintableTemplate = {
+  pageId: "nurturing-skills-for-families-knowledge-utilization-page-4",
+  name: "Nurturing Skills for Families Knowledge and Utilization Page 4",
+  notes:
+    "Nurturing Skills Competency Scale page 4. Questions 49-60 are short letter-entry lines where the respondent writes the selected answer letter from visible choices a-d. Questions 61-73 are radio rating rows for Part F utilization, where 0 means Don't practice the skill at all, 1 means Sometimes, 2 means Often, and 3 means Regularly. There are no separate Other text fields on this page.",
+  backgroundImage: {
+    src: "/template-assets/nurturing-skills-for-families-knowledge-utilization-page-4.png",
+    widthPx: 1008,
+    heightPx: 1561,
+    mimeType: "image/png",
+  },
+  inputDefinitions: [
+    answerLine(49, 44.0, 6.2),
+    answerLine(50, 44.0, 17.1),
+    answerLine(51, 44.0, 27.1),
+    answerLine(52, 44.0, 36.6),
+    answerLine(53, 44.0, 47.7),
+    answerLine(54, 44.0, 59.1),
+    answerLine(55, 44.0, 70.1),
+    answerLine(56, 44.0, 79.7),
+    answerLine(57, 44.0, 88.3),
+    answerLine(58, 90.4, 6.2),
+    answerLine(59, 90.4, 20.2),
+    answerLine(60, 90.4, 34.7),
+    ratingRow(61, 56.0),
+    ratingRow(62, 58.4),
+    ratingRow(63, 61.5),
+    ratingRow(64, 64.9),
+    ratingRow(65, 68.1),
+    ratingRow(66, 71.5),
+    ratingRow(67, 75.0),
+    ratingRow(68, 78.6),
+    ratingRow(69, 82.4),
+    ratingRow(70, 86.4),
+    ratingRow(71, 90.2),
+    ratingRow(72, 94.4),
+    ratingRow(73, 98.0),
+  ],
+  layoutSettings: { paperSize: "letter", widthIn: 8.5, heightIn: 11 },
+  displaySettings: { backgroundColor: "#ffffff" },
+  sourceAssetPath: "ai_context/inbox_template/nurturing-skills-for-families-knowledge-utilization-page-4-04.png",
+  updatedAt: "2026-05-14T16:50:37-07:00",
+};

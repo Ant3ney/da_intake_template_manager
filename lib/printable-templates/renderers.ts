@@ -46,6 +46,162 @@ function alignedPdfX(x: number, w: number, textWidth: number, textAlign: "left" 
   return x + 3;
 }
 
+function splitLongToken(token: string, fontSize: number, maxWidth: number, measureText: (text: string, size: number) => number) {
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const character of token) {
+    const next = `${current}${character}`;
+    if (current && measureText(next, fontSize) > maxWidth) {
+      chunks.push(current);
+      current = character;
+    } else {
+      current = next;
+    }
+  }
+
+  if (current) chunks.push(current);
+  return chunks;
+}
+
+function wrapTextToWidth(
+  text: string,
+  fontSize: number,
+  maxWidth: number,
+  measureText: (text: string, size: number) => number,
+) {
+  const lines: string[] = [];
+  const paragraphs = text.replace(/\r\n?/g, "\n").split("\n");
+
+  for (const paragraph of paragraphs) {
+    const tokens = paragraph.trim().split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) {
+      lines.push("");
+      continue;
+    }
+
+    let current = "";
+    for (const token of tokens) {
+      const tokenParts =
+        measureText(token, fontSize) > maxWidth ? splitLongToken(token, fontSize, maxWidth, measureText) : [token];
+
+      for (const part of tokenParts) {
+        const next = current ? `${current} ${part}` : part;
+        if (current && measureText(next, fontSize) > maxWidth) {
+          lines.push(current);
+          current = part;
+        } else {
+          current = next;
+        }
+      }
+    }
+
+    if (current) lines.push(current);
+  }
+
+  return lines;
+}
+
+function ellipsizeText(text: string, fontSize: number, maxWidth: number, measureText: (text: string, size: number) => number) {
+  if (measureText(text, fontSize) <= maxWidth) return text;
+  const ellipsis = "...";
+  let current = text;
+
+  while (current.length > 0 && measureText(`${current}${ellipsis}`, fontSize) > maxWidth) {
+    current = current.slice(0, -1);
+  }
+
+  return current ? `${current}${ellipsis}` : ellipsis;
+}
+
+function fitTextInBox(
+  text: string,
+  baseFontSize: number,
+  boxWidth: number,
+  boxHeight: number,
+  measureText: (text: string, size: number) => number,
+) {
+  const minFontSize = Math.max(5, Math.min(baseFontSize, 7));
+  const xPadding = 6;
+  const yPadding = 4;
+  const maxWidth = Math.max(1, boxWidth - xPadding);
+  const maxHeight = Math.max(1, boxHeight - yPadding);
+
+  for (let fontSize = baseFontSize; fontSize >= minFontSize; fontSize -= 0.5) {
+    const lineHeight = fontSize * 1.16;
+    const maxLines = Math.max(1, Math.floor(maxHeight / lineHeight));
+    const lines = wrapTextToWidth(text, fontSize, maxWidth, measureText);
+
+    if (lines.length <= maxLines) {
+      return { fontSize, lineHeight, lines };
+    }
+  }
+
+  const fontSize = minFontSize;
+  const lineHeight = fontSize * 1.16;
+  const maxLines = Math.max(1, Math.floor(maxHeight / lineHeight));
+  const lines = wrapTextToWidth(text, fontSize, maxWidth, measureText).slice(0, maxLines);
+  const lastIndex = lines.length - 1;
+  if (lastIndex >= 0) {
+    lines[lastIndex] = ellipsizeText(lines[lastIndex], fontSize, maxWidth, measureText);
+  }
+
+  return { fontSize, lineHeight, lines };
+}
+
+function drawPdfFittedText(
+  page: import("pdf-lib").PDFPage,
+  font: import("pdf-lib").PDFFont,
+  text: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  baseFontSize: number,
+  textAlign: "left" | "center" | "right" | undefined,
+) {
+  const fitted = fitTextInBox(text, baseFontSize, w, h, (value, size) => font.widthOfTextAtSize(value, size));
+  const topPadding = Math.max(1, Math.min(3, h * 0.15));
+
+  fitted.lines.forEach((line, index) => {
+    const textWidth = font.widthOfTextAtSize(line, fitted.fontSize);
+    page.drawText(line, {
+      x: alignedPdfX(x, w, textWidth, textAlign),
+      y: y + h - topPadding - fitted.fontSize - index * fitted.lineHeight,
+      size: fitted.fontSize,
+      font,
+      color: rgb(0, 0, 0),
+    });
+  });
+}
+
+function svgApproxTextWidth(text: string, fontSize: number) {
+  return text.length * fontSize * 0.54;
+}
+
+function svgFittedText(
+  text: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  baseFontSize: number,
+  textAlign: "left" | "center" | "right" | undefined,
+) {
+  const fitted = fitTextInBox(text, baseFontSize, w, h, svgApproxTextWidth);
+  const textX = alignedSvgX(x, w, textAlign);
+  const anchor = svgTextAnchor(textAlign);
+  const topPadding = Math.max(2, Math.min(8, h * 0.15));
+  const tspans = fitted.lines
+    .map(
+      (line, index) =>
+        `<tspan x="${textX}" y="${y + topPadding + fitted.fontSize + index * fitted.lineHeight}">${escapeXml(line)}</tspan>`,
+    )
+    .join("");
+
+  return `<text text-anchor="${anchor}" font-family="Arial, Helvetica, sans-serif" font-size="${fitted.fontSize}" fill="#000">${tspans}</text>`;
+}
+
 async function backgroundPngBuffer(template: PrintableTemplate) {
   const image = await readBackgroundImage(template);
   if (template.backgroundImage.mimeType === "image/png") return image;
@@ -110,13 +266,17 @@ export async function renderTemplatePdf(template: PrintableTemplate, inputValues
             height: textBoxH,
             color: rgb(1, 1, 1),
           });
-          page.drawText(otherText, {
-            x: textBoxX + 3,
-            y: pageHeight - textBoxYTop - textBoxH + Math.max(2, textBoxH - 11),
-            size: 10,
+          drawPdfFittedText(
+            page,
             font,
-            color: rgb(0, 0, 0),
-          });
+            otherText,
+            textBoxX,
+            pageHeight - textBoxYTop - textBoxH,
+            textBoxW,
+            textBoxH,
+            10,
+            "left",
+          );
         }
       }
       continue;
@@ -135,14 +295,7 @@ export async function renderTemplatePdf(template: PrintableTemplate, inputValues
     }
 
     const fontSize = definition.displaySettings.fontSizePt ?? 10;
-    const textWidth = font.widthOfTextAtSize(value, fontSize);
-    page.drawText(value, {
-      x: alignedPdfX(x, w, textWidth, definition.displaySettings.textAlign),
-      y: y + Math.max(2, h - fontSize - 1),
-      size: fontSize,
-      font,
-      color: rgb(0, 0, 0),
-    });
+    drawPdfFittedText(page, font, value, x, y, w, h, fontSize, definition.displaySettings.textAlign);
   }
 
   return Buffer.from(await pdf.save());
@@ -192,7 +345,7 @@ export async function renderTemplatePng(template: PrintableTemplate, inputValues
           const textW = (option.textBoxBounds.widthPercent / 100) * width;
           const textH = (option.textBoxBounds.heightPercent / 100) * height;
           svgParts.push(`<rect x="${textX}" y="${textY}" width="${textW}" height="${textH}" fill="#fff" />`);
-          svgParts.push(`<text x="${textX + 8}" y="${textY + textH - 8}" font-family="Arial, Helvetica, sans-serif" font-size="42" fill="#000">${escapeXml(otherText)}</text>`);
+          svgParts.push(svgFittedText(otherText, textX, textY, textW, textH, 42, "left"));
         }
       }
       continue;
@@ -211,11 +364,7 @@ export async function renderTemplatePng(template: PrintableTemplate, inputValues
     }
 
     const fontSize = ((definition.displaySettings.fontSizePt ?? 10) / 72) * (width / template.layoutSettings.widthIn);
-    const textX = alignedSvgX(x, w, definition.displaySettings.textAlign);
-    const anchor = svgTextAnchor(definition.displaySettings.textAlign);
-    svgParts.push(
-      `<text x="${textX}" y="${y + h - Math.max(4, fontSize * 0.22)}" text-anchor="${anchor}" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" fill="#000">${escapeXml(value)}</text>`,
-    );
+    svgParts.push(svgFittedText(value, x, y, w, h, fontSize, definition.displaySettings.textAlign));
   }
 
   const overlay = Buffer.from(

@@ -25,7 +25,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -231,12 +232,27 @@ a {
 }
 
 .settings-form input,
-.settings-form select {
+.settings-form select,
+.settings-form textarea,
+.notes-editor textarea {
   width: 100%;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   padding: 8px;
   color: #172033;
+}
+
+.settings-form textarea,
+.notes-editor textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.notes-editor {
+  display: grid;
+  gap: 6px;
+  color: #475569;
+  font-size: 12px;
 }
 
 .settings-form .checkbox-label {

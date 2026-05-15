@@ -47,6 +47,7 @@ export type TemplateInputDefinition = {
   inputId: string;
   typeId: TemplateInputTypeId;
   label: string;
+  notes?: string;
   placeholderText?: string;
   bounds: TemplateInputBounds;
   checkOptions?: TemplateCheckOption[];
@@ -81,6 +82,7 @@ export type TemplateInputSchema = {
 export type PrintableTemplate = {
   pageId: string;
   name: string;
+  notes?: string;
   backgroundImage: {
     src: string;
     widthPx: number;

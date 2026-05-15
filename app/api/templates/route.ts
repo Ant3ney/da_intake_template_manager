@@ -1,4 +1,4 @@
-import { listPrintableTemplates, saveSeededTemplates } from "@/lib/printable-templates/store";
+import { listPrintableTemplates, normalizePrintableTemplate, saveSeededTemplates } from "@/lib/printable-templates/store";
 import type { PrintableTemplate } from "@/lib/printable-templates/types";
 
 export async function GET() {
@@ -9,7 +9,7 @@ export async function PUT(request: Request) {
   const incoming = (await request.json()) as PrintableTemplate;
   const templates = await listPrintableTemplates();
   const index = templates.findIndex((template) => template.pageId === incoming.pageId);
-  const updated = { ...incoming, updatedAt: new Date().toISOString() };
+  const updated = normalizePrintableTemplate({ ...incoming, updatedAt: new Date().toISOString() });
 
   if (index === -1) {
     templates.push(updated);

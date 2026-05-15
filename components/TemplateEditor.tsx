@@ -72,8 +72,10 @@ function createOtherTextBounds(bounds: TemplateInputBounds) {
 function normalizeTemplateInputs(template: PrintableTemplate): PrintableTemplate {
   return {
     ...template,
+    notes: template.notes ?? "",
     inputDefinitions: template.inputDefinitions.map((input) => ({
       ...input,
+      notes: input.notes ?? "",
       placeholderText: input.placeholderText?.trim() || defaultPlaceholderForInput(input.typeId, input.label),
       checkOptions: isChoiceInput(input.typeId)
         ? (input.checkOptions ?? []).map((option) => ({
@@ -370,6 +372,16 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
           <p className="panel-meta">{template.pageId}</p>
         </div>
 
+        <label className="notes-editor">
+          Page notes
+          <textarea
+            value={template.notes ?? ""}
+            onChange={(event) => setTemplate((current) => ({ ...current, notes: event.target.value }))}
+            placeholder="Document page-level rules, edge cases, or implementation details."
+            rows={5}
+          />
+        </label>
+
         <div className="button-row">
           <button type="button" onClick={addInput}>Add input</button>
           <button type="button" onClick={removeSelectedInput} disabled={!selectedInput}>Remove</button>
@@ -422,6 +434,17 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
                 onChange={(event) =>
                   updateInput(selectedInput.inputId, (input) => ({ ...input, placeholderText: event.target.value }))
                 }
+              />
+            </label>
+            <label className="full-span">
+              Input notes
+              <textarea
+                value={selectedInput.notes ?? ""}
+                onChange={(event) =>
+                  updateInput(selectedInput.inputId, (input) => ({ ...input, notes: event.target.value }))
+                }
+                placeholder="Document field-specific behavior, validation, mapping, or formatting details."
+                rows={4}
               />
             </label>
             <label className="full-span">
