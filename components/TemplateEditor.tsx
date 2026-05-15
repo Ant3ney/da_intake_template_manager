@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { defaultOtherChoicePlaceholder, defaultPlaceholderForInput } from "@/lib/printable-templates/placeholders";
+import { inferQuestionText } from "@/lib/printable-templates/question-text";
 import type {
   PrintableTemplate,
   TemplateCheckOption,
@@ -76,6 +77,7 @@ function normalizeTemplateInputs(template: PrintableTemplate): PrintableTemplate
     inputDefinitions: template.inputDefinitions.map((input) => ({
       ...input,
       notes: input.notes ?? "",
+      questionText: inferQuestionText(input),
       placeholderText: input.placeholderText?.trim() || defaultPlaceholderForInput(input.typeId, input.label),
       checkOptions: isChoiceInput(input.typeId)
         ? (input.checkOptions ?? []).map((option) => ({
@@ -128,6 +130,7 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
       inputId: `input_${Date.now()}`,
       typeId: "textLine",
       label: `Input ${nextNumber}`,
+      questionText: `Input ${nextNumber}`,
       placeholderText: defaultPlaceholderForInput("textLine", `Input ${nextNumber}`),
       bounds: { xPercent: 10, yPercent: 10 + nextNumber * 4, widthPercent: 30, heightPercent: 3 },
       displaySettings: { useWhiteBackground: true, fontSizePt: 11, textAlign: "left" },
@@ -425,6 +428,17 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: Printable
                     };
                   })
                 }
+              />
+            </label>
+            <label className="full-span">
+              Question this input answers
+              <textarea
+                value={selectedInput.questionText ?? inferQuestionText(selectedInput)}
+                onChange={(event) =>
+                  updateInput(selectedInput.inputId, (input) => ({ ...input, questionText: event.target.value }))
+                }
+                placeholder="Describe the question or prompt this input answers."
+                rows={3}
               />
             </label>
             <label className="full-span">

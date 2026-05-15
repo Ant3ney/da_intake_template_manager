@@ -1,4 +1,5 @@
 import { defaultPlaceholderForInput } from "./placeholders";
+import { inferQuestionText } from "./question-text";
 import type { PrintableTemplate, TemplateInputDefinition, TemplateInputTypeId } from "./types";
 
 function countInputTypes(inputs: TemplateInputDefinition[]) {
@@ -32,6 +33,7 @@ function fieldContext(input: TemplateInputDefinition, index: number) {
     inputId: input.inputId,
     typeId: input.typeId,
     label: input.label,
+    questionText: inferQuestionText(input),
     notes: input.notes ?? "",
     required: input.required ?? false,
     placeholderText: input.placeholderText ?? defaultPlaceholderForInput(input.typeId, input.label),
@@ -78,6 +80,7 @@ export function buildPrintableTemplateContext(template: PrintableTemplate) {
     inputNotes: inputSchemas.map((input) => ({
       inputId: input.inputId,
       label: input.label,
+      questionText: input.questionText,
       notes: input.notes,
     })),
     placeholderData: {

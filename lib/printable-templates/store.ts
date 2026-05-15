@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { defaultPlaceholderForInput } from "./placeholders";
+import { inferQuestionText } from "./question-text";
 import { samplePrintableTemplates } from "./sample";
 import type { PrintableTemplate, TemplateInputDefinition } from "./types";
 
@@ -25,6 +26,7 @@ function withInputPlaceholder(input: TemplateInputDefinition): TemplateInputDefi
   return {
     ...input,
     notes: input.notes ?? "",
+    questionText: inferQuestionText(input),
     placeholderText: input.placeholderText?.trim() || defaultPlaceholderForInput(input.typeId, input.label),
     checkOptions,
   };
