@@ -30,6 +30,7 @@ const templateImports = [
   ["../lib/printable-templates/templates/prevention-aftercare-photo-video-permission-signature-02.ts", "preventionAftercarePhotoVideoPermissionSignatureTemplate"],
   ["../lib/printable-templates/templates/prevention-aftercare-program-intake-exit-form.ts", "preventionAftercareProgramIntakeExitFormTemplate"],
   ["../lib/printable-templates/templates/prevention-aftercare-welcome-program-overview-03.ts", "preventionAftercareWelcomeProgramOverviewTemplate"],
+  ["../lib/printable-templates/templates/sbcc-prevention-and-aftercare-services-referral-form.ts", "sbccPreventionAndAftercareServicesReferralFormTemplate"],
   ["../lib/printable-templates/templates/sbcc-thriving-dads-motherhood-engagement-referral-form-01.ts", "sbccThrivingDadsMotherhoodEngagementReferralForm01Template"],
   ["../lib/printable-templates/templates/sbcc-thriving-dads-motherhood-engagement-referral-form-06.ts", "sbccThrivingDadsMotherhoodEngagementReferralFormTemplate"],
   ["../lib/printable-templates/templates/spa-intake-internal.ts", "spaIntakeInternalTemplate"],

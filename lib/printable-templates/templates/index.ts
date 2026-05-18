@@ -26,6 +26,7 @@ import { preventionAftercareNeedsAssessmentPage2Template } from "./prevention-af
 import { preventionAftercareNeedsAssessmentPage3Template } from "./prevention-aftercare-needs-assessment-page-3";
 import { preventionAftercarePhotoVideoPermissionSignatureTemplate } from "./prevention-aftercare-photo-video-permission-signature-02";
 import { preventionAftercareWelcomeProgramOverviewTemplate } from "./prevention-aftercare-welcome-program-overview-03";
+import { sbccPreventionAndAftercareServicesReferralFormTemplate } from "./sbcc-prevention-and-aftercare-services-referral-form";
 import { sbccThrivingDadsMotherhoodEngagementReferralForm01Template } from "./sbcc-thriving-dads-motherhood-engagement-referral-form-01";
 import { sbccThrivingDadsMotherhoodEngagementReferralFormTemplate } from "./sbcc-thriving-dads-motherhood-engagement-referral-form-06";
 import { surveyResponsePage2Template } from "./survey-response-page-2";
@@ -68,6 +69,7 @@ export const printableTemplateCatalog: PrintableTemplate[] = [
   preventionAftercarePhotoVideoPermissionSignatureTemplate,
   preventionAftercareProgramIntakeExitFormTemplate,
   preventionAftercareWelcomeProgramOverviewTemplate,
+  sbccPreventionAndAftercareServicesReferralFormTemplate,
   sbccThrivingDadsMotherhoodEngagementReferralForm01Template,
   sbccThrivingDadsMotherhoodEngagementReferralFormTemplate,
   spaIntakeInternalTemplate,
